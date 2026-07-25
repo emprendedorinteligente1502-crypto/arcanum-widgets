@@ -7,23 +7,15 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Silkscreen&display=swap" rel="stylesheet">
 <style>
-  :root{--void:#0A0611;--panel:#170D28;--violet:#A855F7;--magenta:#E838C8;--ink:#F3E9FF;--muted:#8E7BB0;--line:rgba(168,85,247,.3)}
+  :root{--bg:#191919;--violet:#A855F7;--magenta:#E838C8;--ink:#F3E9FF;--muted:#8E7BB0;--line:rgba(168,85,247,.3)}
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{background:transparent;color:var(--ink);font-family:'Chakra Petch',system-ui,sans-serif}
-  body{padding:2px}
-  .clock{display:flex;gap:10px;align-items:stretch}
-  .panel{
-    flex:1;position:relative;background:linear-gradient(180deg,#241536,#0E0819);
-    border:1px solid var(--line);border-radius:14px;padding:16px 10px 12px;text-align:center;overflow:hidden;
-    box-shadow:0 0 30px rgba(168,85,247,.12) inset;
-  }
-  .panel::after{ /* línea de bisagra del flip */
-    content:"";position:absolute;left:0;right:0;top:52%;height:1px;background:rgba(0,0,0,.7);
-    box-shadow:0 1px 0 rgba(168,85,247,.25);
-  }
-  .big{font-size:clamp(38px,13vw,64px);font-weight:700;line-height:1;letter-spacing:.02em;
-       text-shadow:0 0 24px rgba(168,85,247,.55)}
-  .sub{font-family:'Silkscreen',monospace;font-size:9px;letter-spacing:.24em;color:var(--muted);margin-top:10px}
+  html,body{background:var(--bg);color:var(--ink);font-family:'Chakra Petch',system-ui,sans-serif}
+  body{padding:6px}
+  .clock{display:flex;gap:clamp(6px,2vw,10px);align-items:stretch}
+  .panel{flex:1;position:relative;background:linear-gradient(180deg,#241536,#0E0819);border:1px solid var(--line);border-radius:16px;padding:clamp(12px,4vw,16px) 10px clamp(9px,3vw,12px);text-align:center;overflow:hidden;box-shadow:0 0 30px rgba(168,85,247,.12) inset}
+  .panel::after{content:"";position:absolute;left:0;right:0;top:52%;height:1px;background:rgba(0,0,0,.7);box-shadow:0 1px 0 rgba(168,85,247,.25)}
+  .big{font-size:clamp(38px,15vw,64px);font-weight:700;line-height:1;letter-spacing:.02em;text-shadow:0 0 24px rgba(168,85,247,.55)}
+  .sub{font-family:'Silkscreen',monospace;font-size:clamp(8px,2.4vw,9px);letter-spacing:.22em;color:var(--muted);margin-top:10px}
   .flip{animation:flip .45s ease}
   @keyframes flip{0%{transform:rotateX(-72deg);opacity:.25}100%{transform:rotateX(0);opacity:1}}
   @media (prefers-reduced-motion:reduce){.flip{animation:none}}
@@ -36,23 +28,20 @@
   </div>
 <script>
 (function(){
-  var q=new URLSearchParams(location.search);
-  var h24=q.get('formato')==='24';
+  var q=new URLSearchParams(location.search),h24=q.get('formato')==='24';
   var dias=['DOMINGO','LUNES','MARTES','MIÉRCOLES','JUEVES','VIERNES','SÁBADO'];
-  var eh=document.getElementById('h'),em=document.getElementById('m');
-  var last={h:'',m:''};
+  var eh=document.getElementById('h'),em=document.getElementById('m'),last={h:'',m:''};
   function pad(n){return n<10?'0'+n:''+n;}
   function tick(){
-    var d=new Date();
-    var hh=d.getHours(), ap=hh>=12?'PM':'AM';
-    if(!h24){ hh=hh%12; if(hh===0) hh=12; }
-    var H=pad(hh), M=pad(d.getMinutes());
-    if(H!==last.h){ eh.textContent=H; eh.classList.remove('flip'); void eh.offsetWidth; eh.classList.add('flip'); last.h=H; }
-    if(M!==last.m){ em.textContent=M; em.classList.remove('flip'); void em.offsetWidth; em.classList.add('flip'); last.m=M; }
-    document.getElementById('ampm').textContent = h24 ? 'HORAS' : ap;
-    document.getElementById('dia').textContent = dias[d.getDay()];
+    var d=new Date(),hh=d.getHours(),ap=hh>=12?'PM':'AM';
+    if(!h24){hh=hh%12;if(hh===0)hh=12;}
+    var H=pad(hh),M=pad(d.getMinutes());
+    if(H!==last.h){eh.textContent=H;eh.classList.remove('flip');void eh.offsetWidth;eh.classList.add('flip');last.h=H;}
+    if(M!==last.m){em.textContent=M;em.classList.remove('flip');void em.offsetWidth;em.classList.add('flip');last.m=M;}
+    document.getElementById('ampm').textContent=h24?'HORAS':ap;
+    document.getElementById('dia').textContent=dias[d.getDay()];
   }
-  tick(); setInterval(tick,1000);
+  tick();setInterval(tick,1000);
 })();
 </script>
 </body>

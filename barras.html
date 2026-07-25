@@ -7,26 +7,17 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Silkscreen&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --void:#0A0611; --panel-2:#1E1033;
-    --violet:#A855F7; --magenta:#E838C8; --cyan:#4CE0F5;
-    --ink:#EFE3FF; --muted:#8E7BB0; --line:rgba(168,85,247,.28);
-  }
+  :root{--bg:#191919;--void:#0A0611;--panel-2:#1E1033;--violet:#A855F7;--magenta:#E838C8;--cyan:#4CE0F5;--ink:#EFE3FF;--muted:#8E7BB0;--line:rgba(168,85,247,.28)}
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{background:transparent;color:var(--ink);font-family:'Space Grotesk',system-ui,sans-serif}
-  body{padding:2px}
-  .card{background:linear-gradient(160deg,var(--panel-2),var(--void) 75%);border:1px solid var(--line);
-        border-radius:18px;padding:16px 18px 18px}
-  h1{font-family:'Silkscreen',monospace;font-size:10px;letter-spacing:.22em;color:var(--magenta);font-weight:400;margin-bottom:14px}
-  .row{margin-bottom:15px}
-  .row:last-child{margin-bottom:0}
+  html,body{background:var(--bg);color:var(--ink);font-family:'Space Grotesk',system-ui,sans-serif}
+  body{padding:6px}
+  .card{background:linear-gradient(160deg,var(--panel-2),var(--void) 75%);border:1px solid var(--line);border-radius:20px;padding:clamp(14px,4vw,18px)}
+  h1{font-family:'Silkscreen',monospace;font-size:clamp(9px,2.6vw,10px);letter-spacing:.2em;color:var(--magenta);font-weight:400;margin-bottom:14px}
+  .row{margin-bottom:clamp(13px,3vw,15px)} .row:last-child{margin-bottom:0}
   .r-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;gap:10px}
-  .r-name{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:14px;letter-spacing:.02em;
-          white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .r-name i{font-style:normal;margin-right:6px}
-  .r-lvl{font-family:'Silkscreen',monospace;font-size:9px;color:var(--muted);letter-spacing:.14em;flex:0 0 auto}
-  .track{height:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);
-         clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%);position:relative;overflow:hidden}
+  .r-name{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:clamp(13px,3.6vw,14px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .r-lvl{font-family:'Silkscreen',monospace;font-size:9px;color:var(--muted);letter-spacing:.12em;flex:0 0 auto}
+  .track{height:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%);position:relative;overflow:hidden}
   .bar{position:absolute;inset:0 auto 0 0;width:0;transition:width 1s cubic-bezier(.2,.8,.2,1)}
   .bar::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(10,6,17,.5) 0 2px,transparent 2px 10px)}
   .empty{color:var(--muted);font-size:13px;line-height:1.6;padding:20px 0;text-align:center}
@@ -36,41 +27,42 @@
 <body>
 <div class="card">
   <h1 id="titulo">PROGRESO POR HABILIDAD</h1>
-  <div id="list"></div>
+  <div id="list"><div class="empty">Cargando…</div></div>
 </div>
 <script>
 (function(){
-  var q=new URLSearchParams(location.search);
+  var q=new URLSearchParams(location.search),api=q.get('api');
   var dec=function(s){try{return decodeURIComponent(s);}catch(e){return s;}};
   document.getElementById('titulo').textContent=dec(q.get('titulo')||'PROGRESO POR HABILIDAD').toUpperCase();
-
-  // formato:  d=🧠 Mente:7:62 ; 💪 Cuerpo:4:30 ; 📚 Saber:9:88
-  //           nombre : nivel : porcentaje(0-100)
-  var raw=dec(q.get('d')||'');
-  var rows=raw.split(/[;|]/).map(function(x){return x.trim();}).filter(Boolean);
-  var list=document.getElementById('list');
-  if(!rows.length){
-    list.innerHTML='<div class="empty">Sin datos.<br>Pega la URL que genera la propiedad <b>URL Barras</b>.</div>';
-    return;
-  }
   var palette=['#A855F7','#E838C8','#4CE0F5','#7C6BFF','#FF7AC6','#5AE6B0','#FFB86B','#FF5C7A'];
-  var html='';
-  rows.forEach(function(r,i){
-    var p=r.split(':');
-    var name=(p[0]||'—').replace(/[<>&]/g,'');
-    var lvl=(p[1]||'1').trim();
-    var pct=Math.max(0,Math.min(100,parseFloat(p[2])||0));
-    var c1=palette[i%palette.length], c2=palette[(i+2)%palette.length];
-    html+='<div class="row"><div class="r-top"><div class="r-name">'+name+'</div>'+
-          '<div class="r-lvl">NV '+lvl+' · '+Math.round(pct)+'%</div></div>'+
-          '<div class="track"><div class="bar" data-p="'+pct+'" style="background:linear-gradient(90deg,'+c1+','+c2+');box-shadow:0 0 16px '+c1+'99"></div></div></div>';
-  });
-  list.innerHTML=html;
-  requestAnimationFrame(function(){
-    Array.prototype.forEach.call(document.querySelectorAll('.bar'),function(b,i){
-      setTimeout(function(){ b.style.width=b.dataset.p+'%'; }, i*90);
+  function render(rows){
+    var list=document.getElementById('list');
+    if(!rows.length){list.innerHTML='<div class="empty">Sin habilidades aún.</div>';return;}
+    list.innerHTML=rows.map(function(r,i){
+      var name=((r.icono?r.icono+' ':'')+r.nombre).replace(/[<>&]/g,'');
+      var c1=palette[i%palette.length],c2=palette[(i+2)%palette.length];
+      return '<div class="row"><div class="r-top"><div class="r-name">'+name+'</div>'+
+        '<div class="r-lvl">NV '+r.nivel+' · '+Math.round(r.pct)+'%</div></div>'+
+        '<div class="track"><div class="bar" data-p="'+r.pct+'" style="background:linear-gradient(90deg,'+c1+','+c2+');box-shadow:0 0 16px '+c1+'99"></div></div></div>';
+    }).join('');
+    requestAnimationFrame(function(){
+      Array.prototype.forEach.call(document.querySelectorAll('.bar'),function(b,i){
+        setTimeout(function(){b.style.width=b.dataset.p+'%';},i*90);});
     });
-  });
+  }
+  function fromParams(){
+    return dec(q.get('d')||'').split(/[;|]/).map(function(x){return x.trim();}).filter(Boolean).map(function(r){
+      var p=r.split(':');return {icono:'',nombre:p[0]||'—',nivel:(p[1]||'1').trim(),pct:Math.max(0,Math.min(100,parseFloat(p[2])||0))};});
+  }
+  function load(){
+    if(!api){render(fromParams());return;}
+    fetch(api,{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
+      if(j.error)throw new Error(j.error);
+      render(j.habilidades.map(function(h){return {icono:h.icono,nombre:h.nombre,nivel:h.nivel,pct:h.progreso};}));
+    }).catch(function(){document.getElementById('list').innerHTML='<div class="empty">Sin conexión con el motor. Revisa tu Worker.</div>';});
+  }
+  load();
+  if(api){setInterval(load,60000);document.addEventListener('visibilitychange',function(){if(!document.hidden)load();});}
 })();
 </script>
 </body>
