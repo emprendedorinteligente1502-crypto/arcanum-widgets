@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARCANUM · Retrato</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Silkscreen&family=Space+Grotesk:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#191919;--violet:#A855F7;--magenta:#E838C8;--cyan:#4CE0F5;--ink:#EFE3FF;--muted:#8E7BB0;--line:rgba(168,85,247,.28)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--ink);font-family:'Space Grotesk',system-ui,sans-serif}
+  body{padding:6px}
+  .frame{position:relative;border-radius:20px;padding:clamp(10px,3vw,16px);
+    background:linear-gradient(160deg,#231442,#140B24);
+    border:1px solid var(--line);
+    box-shadow:0 0 0 1px rgba(232,56,200,.12),0 18px 50px rgba(168,85,247,.18)}
+  /* esquinas ornamentales */
+  .corner{position:absolute;width:22px;height:22px;border:2px solid var(--magenta);opacity:.85;filter:drop-shadow(0 0 5px var(--magenta))}
+  .c1{top:8px;left:8px;border-right:0;border-bottom:0;border-radius:8px 0 0 0}
+  .c2{top:8px;right:8px;border-left:0;border-bottom:0;border-radius:0 8px 0 0}
+  .c3{bottom:8px;left:8px;border-right:0;border-top:0;border-radius:0 0 0 8px}
+  .c4{bottom:8px;right:8px;border-left:0;border-top:0;border-radius:0 0 8px 0}
+  .inner{position:relative;border-radius:13px;overflow:hidden;border:1px solid rgba(168,85,247,.35);
+    aspect-ratio:var(--ar,16/10);background:#0E0819;display:flex;align-items:center;justify-content:center}
+  img{width:100%;height:100%;object-fit:cover;display:block}
+  .sheen{position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.14) 48%,transparent 56%);
+    transform:translateX(-120%);transition:transform 0s}
+  .frame:hover .sheen{transform:translateX(120%);transition:transform 1.1s ease}
+  .drop{cursor:pointer;text-align:center;padding:26px 18px;color:var(--muted)}
+  .drop .ic{font-size:34px;filter:drop-shadow(0 0 10px var(--violet))}
+  .drop b{display:block;font-family:'Chakra Petch',sans-serif;font-size:15px;color:var(--ink);margin:8px 0 3px}
+  .drop small{font-size:11px}
+  .drop.over{background:rgba(168,85,247,.12);color:var(--ink)}
+  .cap{display:flex;justify-content:space-between;align-items:center;margin-top:11px;padding:0 4px}
+  .cap .name{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:clamp(13px,3.4vw,16px);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cap .tag{font-family:'Silkscreen',monospace;font-size:8px;letter-spacing:.14em;color:var(--magenta);flex:0 0 auto;margin-left:10px}
+  .change{position:absolute;top:14px;right:14px;background:rgba(10,6,17,.7);border:1px solid var(--line);color:var(--ink);
+    font-size:11px;padding:5px 10px;border-radius:8px;cursor:pointer;opacity:0;transition:.2s}
+  .inner:hover .change{opacity:1}
+  @media (prefers-reduced-motion:reduce){.frame:hover .sheen{transition:none;transform:translateX(-120%)}}
+</style>
+</head>
+<body>
+<div class="frame">
+  <span class="corner c1"></span><span class="corner c2"></span><span class="corner c3"></span><span class="corner c4"></span>
+  <div class="inner" id="inner">
+    <div class="drop" id="drop">
+      <div class="ic">🖼️</div>
+      <b>Arrastra una imagen aquí</b>
+      <small>o haz clic para elegirla · se guarda en este dispositivo</small>
+    </div>
+    <span class="sheen"></span>
+  </div>
+  <div class="cap"><span class="name" id="name">Retrato del héroe</span><span class="tag" id="tag">ARCANUM</span></div>
+  <input type="file" id="file" accept="image/*" hidden>
+</div>
+<script>
+(function(){
+  var q=new URLSearchParams(location.search);
+  var dec=function(s){try{return decodeURIComponent(s);}catch(e){return s;}};
+  var KEY='arcanum_img_'+(q.get('id')||'main');
+  document.getElementById('name').textContent=dec(q.get('titulo')||'Retrato del héroe');
+  document.getElementById('tag').textContent=(dec(q.get('tag')||'ARCANUM')).toUpperCase();
+  if(q.get('ar')){document.querySelector('.inner').style.setProperty('--ar',dec(q.get('ar')));}
+
+  var inner=document.getElementById('inner'),drop=document.getElementById('drop'),file=document.getElementById('file');
+
+  function show(src){
+    var old=inner.querySelector('img'); if(old)old.remove();
+    if(drop)drop.style.display='none';
+    var img=new Image();img.src=src;img.alt='';
+    inner.insertBefore(img,inner.querySelector('.sheen'));
+    if(!inner.querySelector('.change')){
+      var b=document.createElement('div');b.className='change';b.textContent='Cambiar';
+      b.onclick=function(e){e.stopPropagation();file.click();};inner.appendChild(b);
+    }
+  }
+  function store(src){try{localStorage.setItem(KEY,src);}catch(e){}}
+
+  // 1) prioridad: imagen guardada en el dispositivo
+  var saved=null; try{saved=localStorage.getItem(KEY);}catch(e){}
+  // 2) o imagen por parámetro ?img=URL
+  var param=q.get('img');
+  if(saved)show(saved); else if(param)show(dec(param));
+
+  function read(f){
+    if(!f||!/^image\//.test(f.type))return;
+    var r=new FileReader();
+    r.onload=function(){show(r.result);store(r.result);};
+    r.readAsDataURL(f);
+  }
+  inner.addEventListener('click',function(){file.click();});
+  file.addEventListener('change',function(){read(file.files[0]);});
+  ['dragenter','dragover'].forEach(function(ev){inner.addEventListener(ev,function(e){e.preventDefault();drop&&drop.classList.add('over');});});
+  ['dragleave','drop'].forEach(function(ev){inner.addEventListener(ev,function(e){e.preventDefault();drop&&drop.classList.remove('over');});});
+  inner.addEventListener('drop',function(e){e.preventDefault();if(e.dataTransfer.files[0])read(e.dataTransfer.files[0]);});
+})();
+</script>
+</body>
+</html>

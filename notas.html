@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARCANUM · Bitácora</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Silkscreen&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#191919;--violet:#A855F7;--magenta:#E838C8;--cyan:#4CE0F5;--ink:#EFE3FF;--muted:#8E7BB0;--line:rgba(168,85,247,.28)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--ink);font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body{padding:6px}
+  .card{background:radial-gradient(120% 80% at 100% 0%,rgba(232,56,200,.14),transparent 55%),linear-gradient(160deg,#1E1033,#150C24 78%);border:1px solid var(--line);border-radius:20px;padding:clamp(14px,4vw,22px)}
+  .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .head h1{font-family:'Silkscreen',monospace;font-size:clamp(10px,3vw,12px);letter-spacing:.2em;color:var(--magenta);font-weight:400}
+  .head .count{font-family:'Silkscreen',monospace;font-size:9px;color:var(--muted);letter-spacing:.12em}
+  .composer{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  textarea{flex:1;min-width:0;min-height:44px;max-height:120px;resize:vertical;background:rgba(10,6,17,.55);border:1px solid var(--line);border-radius:12px;padding:11px 13px;color:var(--ink);font-family:'Space Grotesk',sans-serif;font-size:14px;outline:none;transition:.2s}
+  textarea:focus{border-color:var(--violet);box-shadow:0 0 0 3px rgba(168,85,247,.15)}
+  textarea::placeholder{color:var(--muted)}
+  .add{flex:0 0 auto;align-self:stretch;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:15px;color:#fff;background:linear-gradient(120deg,var(--violet),var(--magenta));border:0;border-radius:12px;padding:0 18px;cursor:pointer;transition:.18s;min-height:44px}
+  .add:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(232,56,200,.35)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .note{position:relative;background:rgba(10,6,17,.5);border:1px solid var(--line);border-radius:14px;padding:13px 13px 30px;animation:in .25s ease}
+  .note .txt{font-size:13.5px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+  .note .meta{position:absolute;left:13px;bottom:9px;font-family:'Silkscreen',monospace;font-size:7.5px;letter-spacing:.1em;color:var(--muted)}
+  .note .del{position:absolute;top:8px;right:9px;width:22px;height:22px;border-radius:7px;display:grid;place-items:center;background:rgba(232,56,200,.12);border:1px solid rgba(232,56,200,.3);color:var(--magenta);cursor:pointer;font-size:13px;line-height:1;opacity:0;transition:.15s}
+  .note:hover .del{opacity:1}
+  .note:nth-child(3n+1){border-left:3px solid var(--violet)}
+  .note:nth-child(3n+2){border-left:3px solid var(--magenta)}
+  .note:nth-child(3n){border-left:3px solid var(--cyan)}
+  .empty{grid-column:1/-1;text-align:center;color:var(--muted);font-size:13px;padding:22px 0;line-height:1.6}
+  @keyframes in{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+  @media (prefers-reduced-motion:reduce){.note{animation:none}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="head"><h1 id="titulo">📜 BITÁCORA</h1><div class="count" id="count">0 NOTAS</div></div>
+  <div class="composer">
+    <textarea id="input" placeholder="Escribe una idea, un pendiente, una victoria…" rows="1"></textarea>
+    <button class="add" id="add">Anotar</button>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+(function(){
+  var q=new URLSearchParams(location.search);
+  var dec=function(s){try{return decodeURIComponent(s);}catch(e){return s;}};
+  var KEY='arcanum_notas_'+(q.get('id')||'main');
+  document.getElementById('titulo').textContent=dec(q.get('titulo')||'📜 BITÁCORA').toUpperCase();
+
+  var grid=document.getElementById('grid'), input=document.getElementById('input');
+  var notes=[];
+  try{notes=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){notes=[];}
+
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(notes));}catch(e){}}
+  function when(ts){
+    var d=new Date(ts),n=new Date(),day=86400000;
+    var same=d.toDateString()===n.toDateString();
+    var h=(d.getHours()<10?'0':'')+d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();
+    if(same)return 'HOY '+h;
+    if(n-d<2*day && new Date(n-day).toDateString()===d.toDateString())return 'AYER '+h;
+    return (d.getDate()<10?'0':'')+d.getDate()+'/'+((d.getMonth()+1<10?'0':'')+(d.getMonth()+1));
+  }
+  function esc(t){return t.replace(/[<>&]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;'}[c];});}
+  function render(){
+    document.getElementById('count').textContent=notes.length+(notes.length===1?' NOTA':' NOTAS');
+    if(!notes.length){grid.innerHTML='<div class="empty">Sin notas todavía.<br>Escribe arriba y pulsa <b>Anotar</b>.</div>';return;}
+    grid.innerHTML=notes.map(function(n){
+      return '<div class="note"><div class="del" data-id="'+n.id+'">✕</div>'+
+             '<div class="txt">'+esc(n.t)+'</div><div class="meta">'+when(n.ts)+'</div></div>';
+    }).join('');
+  }
+  function add(){
+    var t=input.value.trim(); if(!t)return;
+    notes.unshift({id:Date.now()+''+Math.floor(Math.random()*99),t:t,ts:Date.now()});
+    input.value='';input.style.height='auto';save();render();
+  }
+  document.getElementById('add').onclick=add;
+  input.addEventListener('keydown',function(e){if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();add();}});
+  input.addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px';});
+  grid.addEventListener('click',function(e){
+    var d=e.target.closest('.del'); if(!d)return;
+    notes=notes.filter(function(n){return n.id!==d.dataset.id;});save();render();
+  });
+  render();
+})();
+</script>
+</body>
+</html>

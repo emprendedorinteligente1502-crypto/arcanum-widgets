@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARCANUM · Dado</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Silkscreen&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#191919;--violet:#A855F7;--magenta:#E838C8;--cyan:#4CE0F5;--gold:#FFC857;--ink:#EFE3FF;--muted:#8E7BB0;--line:rgba(168,85,247,.28)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--ink);font-family:'Chakra Petch',system-ui,sans-serif}
+  body{padding:6px}
+  .card{background:radial-gradient(80% 90% at 50% 0%,rgba(168,85,247,.2),transparent 60%),linear-gradient(160deg,#1E1033,#150C24 80%);border:1px solid var(--line);border-radius:20px;padding:clamp(16px,4vw,24px);text-align:center}
+  .eyebrow{font-family:'Silkscreen',monospace;font-size:9px;letter-spacing:.2em;color:var(--magenta);margin-bottom:14px}
+  .die{width:clamp(96px,30vw,130px);height:clamp(96px,30vw,130px);margin:0 auto;position:relative;cursor:pointer;-webkit-user-select:none;user-select:none}
+  .die svg{width:100%;height:100%;filter:drop-shadow(0 6px 18px rgba(168,85,247,.4))}
+  .die .poly{fill:url(#gg);stroke:rgba(255,255,255,.4);stroke-width:1.5}
+  .die .num{fill:#fff;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:34px;text-anchor:middle;dominant-baseline:central}
+  .die.rolling{animation:roll .6s ease}
+  @keyframes roll{0%{transform:rotate(0) scale(1)}50%{transform:rotate(200deg) scale(1.12)}100%{transform:rotate(360deg) scale(1)}}
+  .verdict{margin-top:14px;font-family:'Silkscreen',monospace;font-size:10px;letter-spacing:.14em;min-height:14px;transition:.3s}
+  .btn{margin-top:14px;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:15px;color:#fff;background:linear-gradient(120deg,var(--violet),var(--magenta));border:0;border-radius:12px;padding:11px 26px;cursor:pointer;transition:.18s}
+  .btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(232,56,200,.35)}
+  @media (prefers-reduced-motion:reduce){.die.rolling{animation:none}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="eyebrow" id="eyebrow">🎲 TIRADA DEL DESTINO</div>
+  <div class="die" id="die">
+    <svg viewBox="0 0 100 100">
+      <defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#A855F7"/><stop offset="1" stop-color="#E838C8"/></linearGradient></defs>
+      <polygon class="poly" points="50,4 90,27 90,73 50,96 10,73 10,27"/>
+      <polygon class="poly" points="50,4 90,27 50,50 10,27" opacity=".55"/>
+      <polygon class="poly" points="90,27 90,73 50,50" opacity=".35"/>
+      <polygon class="poly" points="10,27 10,73 50,50" opacity=".35"/>
+      <text class="num" id="num" x="50" y="55">20</text>
+    </svg>
+  </div>
+  <div class="verdict" id="verdict">Toca el dado para tirar</div>
+  <button class="btn" id="roll">Tirar d20</button>
+</div>
+<script>
+(function(){
+  var q=new URLSearchParams(location.search);
+  var faces=parseInt(q.get('caras'),10)||20;
+  document.getElementById('eyebrow').textContent=(q.get('titulo')?decodeURIComponent(q.get('titulo')):'🎲 TIRADA DEL DESTINO').toUpperCase();
+  document.getElementById('roll').textContent='Tirar d'+faces;
+
+  var die=document.getElementById('die'),num=document.getElementById('num'),verdict=document.getElementById('verdict');
+  function roll(){
+    die.classList.remove('rolling');void die.offsetWidth;die.classList.add('rolling');
+    var flips=0,iv=setInterval(function(){
+      num.textContent=1+Math.floor(Math.random()*faces);
+      if(++flips>8){clearInterval(iv);final();}
+    },60);
+  }
+  function final(){
+    var r=1+Math.floor(Math.random()*faces);
+    num.textContent=r;
+    var pct=r/faces;
+    if(r===faces){verdict.style.color='var(--gold)';verdict.textContent='★ ¡ÉXITO CRÍTICO! ★';}
+    else if(r===1){verdict.style.color='#FF5C7A';verdict.textContent='☠ PIFIA… inténtalo de nuevo';}
+    else if(pct>=.75){verdict.style.color='var(--cyan)';verdict.textContent='¡GRAN TIRADA!';}
+    else if(pct>=.4){verdict.style.color='var(--violet)';verdict.textContent='Tirada decente';}
+    else{verdict.style.color='var(--muted)';verdict.textContent='El destino es esquivo…';}
+  }
+  die.onclick=roll;document.getElementById('roll').onclick=roll;
+})();
+</script>
+</body>
+</html>
