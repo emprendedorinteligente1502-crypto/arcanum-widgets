@@ -30,14 +30,14 @@
 <body><div class="frame">
   <span class="corner c1"></span><span class="corner c2"></span><span class="corner c3"></span><span class="corner c4"></span>
   <div class="inner" id="inner"><div class="drop" id="drop"><div class="ic">🖼️</div><b>Arrastra una imagen aquí</b><small>o haz clic para elegirla · se guarda en este dispositivo</small></div><span class="sheen"></span></div>
-  <div class="cap"><span class="name" id="name">Retrato del héroe</span><span class="tag" id="tag">ARCANUM</span></div>
+  <div class="cap"><span class="name" id="name">Comienza tu aventura!</span><span class="tag" id="tag">ARCANUM</span></div>
   <input type="file" id="file" accept="image/*" hidden>
 </div>
 <script>
 (function(){
   var q=new URLSearchParams(location.search);var dec=function(s){try{return decodeURIComponent(s);}catch(e){return s;}};
   var KEY='arcanum_img_'+(q.get('id')||'main');
-  document.getElementById('name').textContent=dec(q.get('titulo')||'Retrato del héroe');
+  document.getElementById('name').textContent=dec(q.get('titulo')||'Comienza tu aventura!');
   document.getElementById('tag').textContent=(dec(q.get('tag')||'ARCANUM')).toUpperCase();
   var inner=document.getElementById('inner'),drop=document.getElementById('drop'),file=document.getElementById('file');
   function show(src){var old=inner.querySelector('img');if(old)old.remove();if(drop)drop.style.display='none';var img=new Image();img.src=src;img.alt='';inner.insertBefore(img,inner.querySelector('.sheen'));if(!inner.querySelector('.change')){var b=document.createElement('div');b.className='change';b.textContent='Cambiar';b.onclick=function(e){e.stopPropagation();file.click();};inner.appendChild(b);}}
