@@ -25,25 +25,25 @@
   }
 
   *{ box-sizing:border-box; }
-  html,body{ height:100%; margin:0; }
+  html,body{ height:100%; width:100%; margin:0; overflow:hidden; } /* overflow hidden y width 100% */
 
   body{
     font-family:"Chakra Petch", system-ui, sans-serif;
     color:var(--ink);
     background:#191919;
     display:flex;
-    min-height:100%;
   }
 
   /* ---------- Estructura ---------- */
   .widget{
+    flex: 1; /* Ocupa todo el alto */
     width:100%;
-    max-width:1080px;
-    margin:auto;
-    padding:clamp(16px, 3.2vmin, 34px);
+    /* max-width:1080px; SE ELIMINÓ EL LÍMITE PARA QUE CREZCA FLUIDO */
+    padding:clamp(16px, 4vmin, 40px);
     display:flex;
     flex-direction:column;
-    gap:clamp(14px, 2.6vmin, 26px);
+    justify-content:space-between; /* Distribuye arriba, centro y abajo */
+    gap:clamp(14px, 3vmin, 30px);
   }
 
   /* ---------- Barra superior: saludo + clima ---------- */
@@ -58,7 +58,7 @@
     display:inline-flex;
     align-items:center;
     gap:.55em;
-    font-size:clamp(.9rem, 2.4vmin, 1.15rem);
+    font-size:clamp(1rem, 2.5vmin, 1.8rem); /* Topes aumentados */
     font-weight:500;
     letter-spacing:.04em;
     color:var(--ink);
@@ -82,7 +82,7 @@
     background:linear-gradient(180deg, rgba(63,43,99,.55), rgba(35,21,54,.55));
     border:1px solid var(--edge-soft);
     box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
-    font-size:clamp(.82rem, 2.1vmin, 1rem);
+    font-size:clamp(.9rem, 2.2vmin, 1.6rem); /* Topes aumentados */
     white-space:nowrap;
   }
   .wx-i{ color:var(--accent); font-size:1.15em; line-height:1; }
@@ -91,33 +91,35 @@
 
   /* ---------- Escenario principal: reloj + panel ---------- */
   .stage{
+    flex:1; /* Permite ocupar todo el espacio vertical sobrante */
     display:flex;
-    align-items:stretch;
-    gap:clamp(18px, 3.4vmin, 40px);
+    align-items:center; /* Centra el contenido verticalmente */
+    justify-content:center;
+    gap:clamp(20px, 5vw, 80px);
   }
 
   /* --- Reloj flip --- */
   .clock{
-    flex:1 1 auto;
+    flex:0 1 auto;
     display:flex;
-    align-items:flex-start;
+    align-items:center;
     justify-content:center;
-    gap:clamp(8px, 1.8vmin, 18px);
+    gap:clamp(8px, 2vmin, 26px);
   }
   .unit{
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:clamp(6px, 1.4vmin, 12px);
+    gap:clamp(6px, 1.5vmin, 16px);
   }
   .card{
     position:relative;
     display:flex;
     align-items:center;
     justify-content:center;
-    padding:clamp(.28em, 2.6vmin, .5em) clamp(.34em, 3.4vmin, .62em);
-    min-width:clamp(1.5em, 20vmin, 2.1em);
-    border-radius:clamp(14px, 2.6vmin, 24px);
+    padding:clamp(8px, 2.6vmin, 32px) clamp(12px, 3.4vmin, 46px);
+    min-width:clamp(60px, 22vmin, 320px);
+    border-radius:clamp(14px, 2.6vmin, 32px);
     background:linear-gradient(180deg, var(--card-top) 0%, var(--card-top) 49.6%, var(--card-bot) 50.4%, var(--card-bot) 100%);
     border:1px solid var(--edge-soft);
     box-shadow:
@@ -133,7 +135,7 @@
     background:linear-gradient(180deg, rgba(255,255,255,.09), transparent);
     pointer-events:none;
   }
-  .card::after{ /* costura del flip */
+  .card::after{
     content:"";
     position:absolute; left:0; right:0; top:50%;
     height:2px; transform:translateY(-1px);
@@ -144,7 +146,8 @@
   .digit{
     font-family:"Orbitron";
     font-weight:800;
-    font-size:clamp(2.7rem, 15vmin, 8rem);
+    /* Se elevó dramáticamente el límite superior de la fuente a 16rem para pantallas grandes */
+    font-size:clamp(3rem, 18vmin, 16rem);
     line-height:1;
     letter-spacing:.02em;
     color:var(--ink);
@@ -159,7 +162,7 @@
     100%{ transform:perspective(600px) rotateX(0); }
   }
   .sub{
-    font-size:clamp(.62rem, 1.8vmin, .9rem);
+    font-size:clamp(.7rem, 2vmin, 1.4rem); /* Topes aumentados */
     font-weight:600;
     letter-spacing:.34em;
     text-indent:.34em;
@@ -181,7 +184,8 @@
     font-family:"Orbitron";
     font-weight:700;
     color:var(--accent);
-    font-size:clamp(1.6rem, 8vmin, 4.2rem);
+    /* Tope superior ajustado */
+    font-size:clamp(2rem, 10vmin, 9rem);
     line-height:.8;
     animation:blink 1s steps(1,end) infinite;
     text-shadow:0 0 18px rgba(183,148,246,.5);
@@ -190,7 +194,7 @@
   .secs{
     font-family:"Orbitron";
     font-weight:600;
-    font-size:clamp(.7rem, 2vmin, 1rem);
+    font-size:clamp(.8rem, 2.5vmin, 1.8rem); /* Topes aumentados */
     color:var(--ink-faint);
     letter-spacing:.1em;
     font-variant-numeric:tabular-nums;
@@ -198,12 +202,12 @@
 
   /* --- Panel lateral: fecha + progreso --- */
   .panel{
-    flex:0 0 clamp(220px, 30%, 300px);
+    flex:0 0 clamp(250px, 30vw, 450px); /* Ligeramente más flexible para 4k */
     display:flex;
     flex-direction:column;
     justify-content:center;
-    gap:clamp(14px, 2.6vmin, 22px);
-    padding-left:clamp(14px, 2.6vmin, 26px);
+    gap:clamp(14px, 3vmin, 32px);
+    padding-left:clamp(14px, 3vmin, 40px);
     border-left:1px solid rgba(124,71,201,.22);
   }
   .p-date{
@@ -214,36 +218,36 @@
   .p-day{
     display:grid;
     place-items:center;
-    width:clamp(2.4em, 9vmin, 2.9em);
-    height:clamp(2.4em, 9vmin, 2.9em);
-    border-radius:14px;
+    width:clamp(2.6em, 9vmin, 3.8em);
+    height:clamp(2.6em, 9vmin, 3.8em);
+    border-radius:clamp(14px, 2vmin, 24px);
     background:linear-gradient(180deg, var(--card-top), var(--card-bot));
     border:1px solid var(--edge);
     box-shadow:0 12px 26px -14px rgba(124,71,201,.8), inset 0 1px 0 rgba(255,255,255,.08);
     font-family:"Orbitron";
     font-weight:800;
-    font-size:clamp(1.3rem, 4.4vmin, 2rem);
+    font-size:clamp(1.4rem, 4.4vmin, 3rem); /* Topes aumentados */
     color:var(--ink);
   }
-  .p-when{ display:flex; flex-direction:column; gap:.15em; line-height:1.15; }
+  .p-when{ display:flex; flex-direction:column; gap:.25em; line-height:1.15; }
   .p-month{
-    font-size:clamp(.95rem, 2.6vmin, 1.25rem);
+    font-size:clamp(1rem, 2.6vmin, 1.8rem);
     font-weight:600;
     letter-spacing:.02em;
     text-transform:capitalize;
   }
   .p-meta{
-    font-size:clamp(.68rem, 1.8vmin, .82rem);
+    font-size:clamp(.75rem, 1.8vmin, 1.2rem);
     letter-spacing:.06em;
     color:var(--ink-dim);
   }
 
-  .bars{ display:flex; flex-direction:column; gap:clamp(10px, 1.8vmin, 16px); }
+  .bars{ display:flex; flex-direction:column; gap:clamp(12px, 2vmin, 24px); }
   .bar-head{
     display:flex;
     align-items:baseline;
     justify-content:space-between;
-    font-size:clamp(.7rem, 1.9vmin, .86rem);
+    font-size:clamp(.8rem, 2vmin, 1.3rem);
     letter-spacing:.14em;
     text-transform:uppercase;
     color:var(--ink-dim);
@@ -256,7 +260,7 @@
     color:var(--accent);
   }
   .track{
-    height:clamp(7px, 1.4vmin, 10px);
+    height:clamp(8px, 1.5vmin, 16px);
     border-radius:999px;
     background:var(--track);
     border:1px solid rgba(124,71,201,.28);
@@ -276,20 +280,20 @@
   .week{
     display:grid;
     grid-template-columns:repeat(7, 1fr);
-    gap:clamp(5px, 1.2vmin, 10px);
+    gap:clamp(6px, 1.5vmin, 16px);
   }
   .wd{
     display:flex;
     flex-direction:column;
     align-items:center;
     gap:.25em;
-    padding:clamp(.4em, 1.4vmin, .7em) 0;
-    border-radius:12px;
+    padding:clamp(.5em, 1.6vmin, 1.2em) 0;
+    border-radius:clamp(12px, 1.8vmin, 20px);
     background:rgba(63,43,99,.16);
     border:1px solid transparent;
   }
   .wd-l{
-    font-size:clamp(.6rem, 1.7vmin, .78rem);
+    font-size:clamp(.7rem, 1.8vmin, 1.2rem);
     font-weight:600;
     letter-spacing:.1em;
     color:var(--ink-faint);
@@ -297,7 +301,7 @@
   .wd-n{
     font-family:"Orbitron";
     font-weight:600;
-    font-size:clamp(.82rem, 2.2vmin, 1.05rem);
+    font-size:clamp(.9rem, 2.3vmin, 1.6rem);
     color:var(--ink-dim);
     font-variant-numeric:tabular-nums;
   }
@@ -310,15 +314,15 @@
   .wd.today .wd-n{ color:var(--ink); }
   .wd.weekend .wd-l{ color:#c79bd8; }
 
-  /* ---------- Móvil: todo en columna (flex column) ---------- */
-  @media (max-width:640px){
+  /* ---------- Móvil / Tablets (Flex Column) ---------- */
+  @media (max-width:768px){ /* Punto de quiebre subido a 768px para proteger la legibilidad en iPads */
     .stage{ flex-direction:column; align-items:stretch; }
     .clock{ order:0; }
     .panel{
       order:1;
       flex-basis:auto;
       padding-left:0;
-      padding-top:clamp(14px, 3vmin, 20px);
+      padding-top:clamp(16px, 3.5vmin, 26px);
       border-left:0;
       border-top:1px solid rgba(124,71,201,.22);
     }
