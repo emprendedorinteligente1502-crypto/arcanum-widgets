@@ -12,7 +12,7 @@
   /* Panel: fijo a TODO el bloque */
   .app{position:fixed;inset:0;overflow:hidden;display:flex;
     background:radial-gradient(90% 130% at 12% 0%,rgba(168,85,247,.22),transparent 60%),radial-gradient(80% 120% at 100% 100%,rgba(76,224,245,.12),transparent 55%),linear-gradient(150deg,#20123A,#120A20 80%);
-    border:1px solid var(--line);border-radius:clamp(0px,2vmin,20px)}
+    border:1px solid var(--line);border-radius:clamp(0px,2vmin,20px); margin: 16px;}
   .app::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.26;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:46px 46px;-webkit-mask-image:radial-gradient(90% 70% at 20% 0%,#000,transparent 72%);mask-image:radial-gradient(90% 70% at 20% 0%,#000,transparent 72%)}
   .fit{position:relative;flex:1;min-width:0;min-height:0;display:flex}
 
