@@ -3,60 +3,117 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ARCANUM · Pomodoro</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Silkscreen&family=Space+Grotesk:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Cinzel:wght@600;700&family=Silkscreen&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{--bg:#191919;--violet:#A855F7;--magenta:#E838C8;--cyan:#4CE0F5;--ink:#EFE3FF;--muted:#8E7BB0;--line:rgba(168,85,247,.28);--accent:var(--violet)}
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-  #stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:4px}
-  #root{width:620px;flex:0 0 auto;transform-origin:center center}
-  .card{position:relative;overflow:hidden;background:radial-gradient(120% 90% at 50% -10%,rgba(168,85,247,.20),transparent 60%),linear-gradient(160deg,#1E1033,#150C24 75%);border:1px solid var(--line);border-radius:20px;padding:24px}
-  .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
-  .mode{font-family:'Silkscreen',monospace;font-size:11px;letter-spacing:.18em;color:var(--accent);text-transform:uppercase}
-  .cycle{font-family:'Silkscreen',monospace;font-size:9px;letter-spacing:.14em;color:var(--muted)}
-  .stage2{display:flex;align-items:center;justify-content:center;gap:30px}
-  .ring{position:relative;width:190px;height:190px;flex:0 0 auto}
+  body{display:flex}
+  /* Panel: ocupa TODO el bloque */
+  .card{flex:1;position:relative;overflow:hidden;display:flex;
+    background:radial-gradient(90% 130% at 12% 0%,rgba(168,85,247,.22),transparent 60%),radial-gradient(80% 120% at 100% 100%,rgba(76,224,245,.12),transparent 55%),linear-gradient(150deg,#20123A,#120A20 80%);
+    border:1px solid var(--line);border-radius:clamp(14px,2vmin,22px)}
+  .card::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.28;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:46px 46px;-webkit-mask-image:radial-gradient(90% 70% at 20% 0%,#000,transparent 72%);mask-image:radial-gradient(90% 70% at 20% 0%,#000,transparent 72%)}
+  /* Contenido: llena todo el panel */
+  .fit{position:relative;flex:1;min-width:0;min-height:0;display:flex;align-items:stretch;transform-origin:center center}
+
+  .left{position:relative;flex:1 1 46%;min-width:0;padding:clamp(20px,3.4vmin,34px) clamp(18px,3vmin,28px);display:flex;flex-direction:column;justify-content:center;gap:clamp(10px,1.8vmin,18px)}
+  .eyebrow{font-family:'Silkscreen',monospace;font-size:clamp(9px,1.6vmin,11px);letter-spacing:.24em;color:var(--magenta);text-transform:uppercase}
+  .headline{font-family:'Cinzel',serif;font-weight:700;font-size:clamp(20px,3.6vmin,32px);line-height:1.22;letter-spacing:.01em;color:#F3ECFF}
+  .headline .hl{background:linear-gradient(100deg,var(--violet),var(--magenta) 55%,var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .flow{display:flex;align-items:center;gap:clamp(6px,1.2vmin,10px);flex-wrap:wrap;margin-top:2px}
+  .chip{display:flex;flex-direction:column;background:rgba(10,6,17,.5);border:1px solid var(--line);border-radius:11px;padding:clamp(6px,1.2vmin,9px) clamp(10px,1.8vmin,14px)}
+  .chip b{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:clamp(14px,2.4vmin,18px);line-height:1}
+  .chip small{font-family:'Silkscreen',monospace;font-size:clamp(6px,1.1vmin,8px);letter-spacing:.12em;color:var(--muted);margin-top:4px}
+  .chip.a b{color:var(--violet)}.chip.b b{color:var(--cyan)}.chip.c b{color:var(--magenta)}
+  .arrowm{color:var(--muted);font-size:clamp(12px,1.9vmin,15px)}
+  .brand{margin-top:6px;font-family:'Silkscreen',monospace;font-size:clamp(7px,1.2vmin,9px);letter-spacing:.28em;color:var(--muted)}
+
+  .divider{width:1px;flex:0 0 auto;margin:clamp(20px,3vmin,30px) 0;background:linear-gradient(180deg,transparent,var(--line) 20%,rgba(232,56,200,.45) 50%,var(--line) 80%,transparent)}
+
+  .right{flex:1 1 54%;min-width:0;padding:clamp(20px,3vmin,30px) clamp(20px,3.2vmin,30px);display:flex;flex-direction:column;justify-content:center}
+  .rhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:clamp(10px,2vmin,18px)}
+  .mode{font-family:'Silkscreen',monospace;font-size:clamp(9px,1.8vmin,11px);letter-spacing:.18em;color:var(--accent);text-transform:uppercase}
+  .cycle{font-family:'Silkscreen',monospace;font-size:clamp(8px,1.5vmin,9px);letter-spacing:.14em;color:var(--muted)}
+  .tstage{display:flex;align-items:center;justify-content:center;gap:clamp(16px,3vmin,28px)}
+  .ring{position:relative;width:clamp(130px,28vmin,240px);height:clamp(130px,28vmin,240px);flex:0 0 auto}
   .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
-  .ring .bg{fill:none;stroke:rgba(168,85,247,.14);stroke-width:9}
-  .ring .fg{fill:none;stroke:var(--accent);stroke-width:9;stroke-linecap:round;filter:drop-shadow(0 0 8px var(--accent));transition:stroke-dashoffset .5s linear,stroke .4s}
+  .ring .bg{fill:none;stroke:rgba(168,85,247,.15);stroke-width:7}
+  .ring .fg{fill:none;stroke:var(--accent);stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset .5s linear,stroke .4s}
   .disp{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-  .time{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:50px;line-height:1;letter-spacing:.01em}
-  .of{font-family:'Silkscreen',monospace;font-size:8px;letter-spacing:.2em;color:var(--muted);margin-top:6px}
-  .side{display:flex;flex-direction:column;gap:9px;min-width:130px}
-  .btn{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:14px;letter-spacing:.03em;color:var(--ink);background:rgba(168,85,247,.12);border:1px solid var(--line);border-radius:11px;padding:11px 16px;cursor:pointer;transition:.18s;text-align:center;-webkit-user-select:none;user-select:none}
+  .time{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:clamp(30px,7.2vmin,50px);line-height:1}
+  .of{font-family:'Silkscreen',monospace;font-size:clamp(7px,1.4vmin,8px);letter-spacing:.2em;color:var(--muted);margin-top:6px}
+  .side{display:flex;flex-direction:column;gap:clamp(7px,1.4vmin,10px);min-width:clamp(104px,15vmin,130px)}
+  .btn{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:clamp(12px,2vmin,15px);color:var(--ink);background:rgba(168,85,247,.12);border:1px solid var(--line);border-radius:11px;padding:clamp(9px,1.6vmin,12px) clamp(12px,2.2vmin,17px);cursor:pointer;transition:.18s;text-align:center;-webkit-user-select:none;user-select:none}
   .btn:hover{background:rgba(168,85,247,.24)}
-  .btn.primary{background:linear-gradient(120deg,var(--violet),var(--magenta));border-color:transparent;box-shadow:0 4px 18px rgba(168,85,247,.35)}
-  .btn.ghost{font-size:12px;padding:8px 14px;color:var(--muted)}
-  .stats{display:flex;gap:8px;margin-top:18px}
-  .pill{flex:1;text-align:center;background:rgba(10,6,17,.5);border:1px solid var(--line);border-radius:10px;padding:9px 6px}
-  .pill b{display:block;font-family:'Chakra Petch',sans-serif;font-size:18px}
-  .pill small{font-family:'Silkscreen',monospace;font-size:7.5px;letter-spacing:.12em;color:var(--muted)}
+  .btn.primary{background:linear-gradient(120deg,var(--violet),var(--magenta));border-color:transparent}
+  .btn.ghost{font-size:clamp(11px,1.7vmin,12px);padding:clamp(7px,1.3vmin,9px) clamp(12px,2vmin,15px);color:var(--muted)}
+  .stats{display:flex;gap:clamp(6px,1.4vmin,9px);margin-top:clamp(12px,2.2vmin,18px)}
+  .pill{flex:1;min-width:0;text-align:center;background:rgba(10,6,17,.5);border:1px solid var(--line);border-radius:10px;padding:clamp(7px,1.6vmin,10px) 6px}
+  .pill b{display:block;font-family:'Chakra Petch',sans-serif;font-size:clamp(15px,2.6vmin,19px)}
+  .pill small{font-family:'Silkscreen',monospace;font-size:clamp(6.5px,1.1vmin,8px);letter-spacing:.12em;color:var(--muted)}
+
+  /* ===== RETRATO (bloque alto / móvil): SOLO el temporizador, llenando el panel ===== */
+  .card.portrait .left,.card.portrait .divider{display:none}
+  .card.portrait .right{flex:1;justify-content:center;padding:clamp(22px,6vw,36px)}
+  .card.portrait .rhead{margin-bottom:clamp(14px,4vw,24px)}
+  .card.portrait .mode{font-size:clamp(11px,3vw,14px)}
+  .card.portrait .cycle{font-size:clamp(9px,2.4vw,11px)}
+  .card.portrait .tstage{flex-direction:column;gap:clamp(18px,5vw,30px)}
+  .card.portrait .ring{width:clamp(190px,min(68vw,42vh),360px);height:clamp(190px,min(68vw,42vh),360px)}
+  .card.portrait .time{font-size:clamp(50px,min(19vw,12vh),120px)}
+  .card.portrait .of{font-size:clamp(9px,2.4vw,12px)}
+  .card.portrait .side{flex-direction:row;flex-wrap:wrap;justify-content:center;width:100%;min-width:0;gap:clamp(9px,2.6vw,13px)}
+  .card.portrait .side .btn{flex:1 1 auto;min-width:clamp(130px,34vw,180px);font-size:clamp(16px,4.4vw,20px);padding:clamp(13px,3.6vw,17px) 18px}
+  .card.portrait .btn.primary{flex:1 1 100%}
+  .card.portrait .btn.ghost{flex:1 1 100%}
+  .card.portrait .stats{margin-top:clamp(18px,5vw,26px)}
+  .card.portrait .pill b{font-size:clamp(20px,5.4vw,28px)}
+  .card.portrait .pill small{font-size:clamp(8px,2.4vw,11px)}
+
   @media (prefers-reduced-motion:reduce){.btn{transition:none}}
 </style></head>
-<body><div id="stage"><div id="root"><div class="card" id="card">
-  <div class="head"><div class="mode" id="mode">⚔️ ENFOQUE</div><div class="cycle" id="cycle">CICLO 1</div></div>
-  <div class="stage2">
-    <div class="ring"><svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="44"/><circle class="fg" id="arc" cx="50" cy="50" r="44"/></svg>
-      <div class="disp"><div class="time" id="time">25:00</div><div class="of" id="task">SESIÓN DE PODER</div></div></div>
-    <div class="side"><div class="btn primary" id="toggle">▶ Iniciar</div><div class="btn" id="skip">⏭ Saltar</div><div class="btn ghost" id="reset">↺ Reiniciar</div></div>
+<body>
+  <div class="card" id="card">
+    <div class="fit" id="fit">
+      <div class="left">
+        <div class="eyebrow">⚔️ Ritual de enfoque</div>
+        <div class="headline">Incrementa tu productividad y realiza mejor tus misiones de hoy con la <span class="hl">Técnica Pomodoro</span></div>
+        <div class="flow">
+          <div class="chip a"><b id="c-work">25</b><small>MIN ENFOQUE</small></div>
+          <span class="arrowm">→</span>
+          <div class="chip b"><b id="c-rest">5</b><small>MIN DESCANSO</small></div>
+          <span class="arrowm">→</span>
+          <div class="chip c"><b>×4</b><small>Y PAUSA LARGA</small></div>
+        </div>
+        <div class="brand">ARCANUM OS</div>
+      </div>
+      <div class="divider"></div>
+      <div class="right">
+        <div class="rhead"><div class="mode" id="mode">⚔️ ENFOQUE</div><div class="cycle" id="cycle">CICLO 1</div></div>
+        <div class="tstage">
+          <div class="ring"><svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="45"/><circle class="fg" id="arc" cx="50" cy="50" r="45"/></svg>
+            <div class="disp"><div class="time" id="time">25:00</div><div class="of" id="task">SESIÓN DE PODER</div></div></div>
+          <div class="side"><div class="btn primary" id="toggle">▶ Iniciar</div><div class="btn" id="skip">⏭ Saltar</div><div class="btn ghost" id="reset">↺ Reiniciar</div></div>
+        </div>
+        <div class="stats"><div class="pill"><b id="done">0</b><small>ENFOQUES</small></div><div class="pill"><b id="focusmin">0</b><small>MIN TOTALES</small></div><div class="pill"><b id="streak">0</b><small>SEGUIDOS</small></div></div>
+      </div>
+    </div>
   </div>
-  <div class="stats"><div class="pill"><b id="done">0</b><small>ENFOQUES</small></div><div class="pill"><b id="focusmin">0</b><small>MIN TOTALES</small></div><div class="pill"><b id="streak">0</b><small>SEGUIDOS</small></div></div>
-</div></div></div>
 <script>
 (function(){
   var q=new URLSearchParams(location.search);
   var WORK=(parseInt(q.get('trabajo'),10)||25)*60,SHORT=(parseInt(q.get('descanso'),10)||5)*60,LONG=(parseInt(q.get('largo'),10)||15)*60,beep=q.get('sonido')!=='0';
-  var C=2*Math.PI*44,arc=document.getElementById('arc');arc.style.strokeDasharray=C;var card=document.getElementById('card');
+  document.getElementById('c-work').textContent=Math.round(WORK/60);document.getElementById('c-rest').textContent=Math.round(SHORT/60);
+  var C=2*Math.PI*45,arc=document.getElementById('arc');arc.style.strokeDasharray=C;
+  var card=document.getElementById('card'),fit=document.getElementById('fit');
   var state={mode:'work',left:WORK,total:WORK,running:false,cycle:1,done:0,focusMin:0,streak:0};
-  try{var s=JSON.parse(localStorage.getItem('arcanum_pomo')||'{}');state.done=s.done||0;state.focusMin=s.focusMin||0;state.streak=s.streak||0;}catch(e){}
+  try{var sv=JSON.parse(localStorage.getItem('arcanum_pomo')||'{}');state.done=sv.done||0;state.focusMin=sv.focusMin||0;state.streak=sv.streak||0;}catch(e){}
   var timer=null;
   function fmt(x){var m=Math.floor(x/60),y=x%60;return(m<10?'0':'')+m+':'+(y<10?'0':'')+y;}
   function color(){card.style.setProperty('--accent',state.mode==='work'?'#A855F7':state.mode==='long'?'#4CE0F5':'#E838C8');}
-  function labels(){var m=document.getElementById('mode'),t=document.getElementById('task');
-    if(state.mode==='work'){m.textContent='⚔️ ENFOQUE';t.textContent='SESIÓN DE PODER';}else if(state.mode==='long'){m.textContent='🌌 DESCANSO LARGO';t.textContent='RECUPERA MANÁ';}else{m.textContent='🌙 DESCANSO';t.textContent='RESPIRA';}}
-  function render(){document.getElementById('time').textContent=fmt(state.left);arc.style.strokeDashoffset=C*(1-state.left/state.total);
-    document.getElementById('cycle').textContent='CICLO '+state.cycle;document.getElementById('done').textContent=state.done;document.getElementById('focusmin').textContent=state.focusMin;document.getElementById('streak').textContent=state.streak;
-    document.getElementById('toggle').innerHTML=state.running?'❚❚ Pausar':'▶ Iniciar';color();labels();}
+  function labels(){var m=document.getElementById('mode'),t=document.getElementById('task');if(state.mode==='work'){m.textContent='⚔️ ENFOQUE';t.textContent='SESIÓN DE PODER';}else if(state.mode==='long'){m.textContent='🌌 DESCANSO LARGO';t.textContent='RECUPERA MANÁ';}else{m.textContent='🌙 DESCANSO';t.textContent='RESPIRA';}}
+  function render(){document.getElementById('time').textContent=fmt(state.left);arc.style.strokeDashoffset=C*(1-state.left/state.total);document.getElementById('cycle').textContent='CICLO '+state.cycle;document.getElementById('done').textContent=state.done;document.getElementById('focusmin').textContent=state.focusMin;document.getElementById('streak').textContent=state.streak;document.getElementById('toggle').innerHTML=state.running?'❚❚ Pausar':'▶ Iniciar';color();labels();}
   function save(){try{localStorage.setItem('arcanum_pomo',JSON.stringify({done:state.done,focusMin:state.focusMin,streak:state.streak}));}catch(e){}}
   function ding(){if(!beep)return;try{var a=new(window.AudioContext||window.webkitAudioContext)();[0,.18,.36].forEach(function(t){var o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=state.mode==='work'?880:660;g.gain.setValueAtTime(.0001,a.currentTime+t);g.gain.exponentialRampToValueAtTime(.25,a.currentTime+t+.02);g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+t+.16);o.start(a.currentTime+t);o.stop(a.currentTime+t+.17);});}catch(e){}}
   function next(auto){if(state.mode==='work'){state.done++;state.focusMin+=Math.round(state.total/60);state.streak++;save();if(state.cycle%4===0){state.mode='long';state.total=state.left=LONG;}else{state.mode='short';state.total=state.left=SHORT;}}else{if(state.mode==='long')state.cycle=1;else state.cycle++;state.mode='work';state.total=state.left=WORK;}if(auto)ding();render();}
@@ -65,10 +122,19 @@
   document.getElementById('skip').onclick=function(){next(false);};
   document.getElementById('reset').onclick=function(){clearInterval(timer);state.running=false;state.mode='work';state.cycle=1;state.total=state.left=WORK;state.streak=0;save();render();};
   render();
-  var el=document.getElementById('root');
-  function fit(){el.style.transform='none';var s=Math.min((innerWidth-8)/el.offsetWidth,(innerHeight-8)/el.offsetHeight);s=Math.max(.12,Math.min(s,1.6));el.style.transform='scale('+s+')';}
-  var raf;function sch(){cancelAnimationFrame(raf);raf=requestAnimationFrame(fit);}
-  addEventListener('resize',sch);addEventListener('orientationchange',sch);if(window.ResizeObserver)new ResizeObserver(sch).observe(el);
-  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fit);fit();setTimeout(fit,300);
+
+  /* ---------- Reacomodo por proporción + salvaguarda anti-recorte ---------- */
+  function relayout(){
+    var portrait=(innerWidth/innerHeight)<1.15;
+    card.classList.toggle('portrait',portrait);
+    fit.style.transform='none';
+    var s=Math.min(1, fit.clientWidth/fit.scrollWidth, fit.clientHeight/fit.scrollHeight);
+    if(s<0.995) fit.style.transform='scale('+s+')';
+  }
+  var raf;function sch(){cancelAnimationFrame(raf);raf=requestAnimationFrame(relayout);}
+  addEventListener('resize',sch);addEventListener('orientationchange',sch);
+  if(window.ResizeObserver)new ResizeObserver(sch).observe(document.body);
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(relayout);
+  relayout();setTimeout(relayout,300);
 })();
 </script></body></html>
