@@ -17,7 +17,7 @@
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
     font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-  body{display:flex;padding:clamp(6px,1.6vmin,16px)}
+  body{display:flex;padding:clamp(6px,2vmin,24px)}
 
   /* ---------- Tarjeta: ocupa todo el bloque ---------- */
   .card{
@@ -25,7 +25,7 @@
     flex:1;                       /* se estira al ancho y al alto */
     display:flex;align-items:stretch;
     gap:clamp(16px,3vw,40px);
-    padding:clamp(18px,3.4vmin,42px);
+    padding:clamp(18px,4vmin,42px);
     border:1px solid var(--line);border-radius:clamp(14px,2.2vmin,22px);
     background:
       radial-gradient(90% 120% at 15% 20%,rgba(168,85,247,.22),transparent 60%),
@@ -50,31 +50,32 @@
   /* ---------- Cuerpo de texto (centrado, llena el alto) ---------- */
   .body{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
   .eyebrow{font-family:'Silkscreen',monospace;
-    font-size:clamp(8px,1.5vmin,11px);letter-spacing:.2em;color:var(--magenta);margin-bottom:clamp(8px,1.6vmin,14px)}
+    font-size:clamp(10px,1.5vmin,14px);letter-spacing:.2em;color:var(--magenta);margin-bottom:clamp(8px,2vmin,16px)}
 
   /* Slides apilados con grid (siempre tienen altura real, no colapsan) */
   .slides{display:grid;overflow:hidden;min-width:0}
   .slide{grid-area:1/1;min-width:0;
     font-family:'Chakra Petch',sans-serif;font-weight:700;line-height:1.28;
     overflow-wrap:break-word;word-break:break-word;
-    font-size:clamp(15px,3vmin,26px);        /* respaldo antes de que el JS ajuste */
+    /* Escalado responsivo nativo: mínimo 18px, crece con la pantalla, tope máximo 52px */
+    font-size:clamp(18px,5vmin,52px);       
     opacity:0;transform:translateY(8px);transition:opacity .5s,transform .5s;pointer-events:none}
   .slide.on{opacity:1;transform:none;pointer-events:auto}
   .slide .author{display:block;margin-top:.5em;font-family:'Space Grotesk',sans-serif;
-    font-weight:500;font-size:.5em;color:var(--muted)}
+    font-weight:500;font-size:.6em;color:var(--muted)}
 
   /* ---------- Navegación ---------- */
-  .nav{display:flex;align-items:center;gap:10px;margin-top:clamp(12px,2.2vmin,20px)}
+  .nav{display:flex;align-items:center;gap:10px;margin-top:clamp(16px,3vmin,24px)}
   .dots{display:flex;gap:6px;flex:1;flex-wrap:wrap}
   .dot{width:7px;height:7px;border-radius:50%;background:rgba(168,85,247,.3);cursor:pointer;transition:.25s}
   .dot.on{background:var(--magenta);width:20px;border-radius:4px}
-  .arrow{width:clamp(28px,5vmin,34px);height:clamp(28px,5vmin,34px);border-radius:9px;display:grid;place-items:center;background:rgba(168,85,247,.12);border:1px solid var(--line);color:var(--ink);cursor:pointer;font-size:15px;-webkit-user-select:none;user-select:none;transition:.2s}
+  .arrow{width:clamp(32px,5vmin,40px);height:clamp(32px,5vmin,40px);border-radius:9px;display:grid;place-items:center;background:rgba(168,85,247,.12);border:1px solid var(--line);color:var(--ink);cursor:pointer;font-size:16px;-webkit-user-select:none;user-select:none;transition:.2s}
   .arrow:hover{background:rgba(168,85,247,.26)}
 
   /* ---------- Móvil: columna vertical, texto centrado ---------- */
-  @media (max-width:560px){
-    .card{flex-direction:column;gap:clamp(14px,3vh,26px);text-align:center;justify-content:center}
-    .scene{width:clamp(66px,22vw,110px);height:clamp(66px,22vw,110px)}
+  @media (max-width:600px){
+    .card{flex-direction:column;gap:clamp(16px,4vh,32px);text-align:center;justify-content:center}
+    .scene{width:clamp(80px,25vw,120px);height:clamp(80px,25vw,120px)}
     .slide{text-align:center}
     .dots{flex:0 0 auto;justify-content:center}
     .nav{justify-content:center}
@@ -115,7 +116,6 @@
   }).filter(function(x){return x.t;});
   if(!list.length)list=[{t:"Escribe tus frases con el parámetro frases.",a:""}];
 
-  var card=document.getElementById('card');
   var slides=document.getElementById('slides'),dots=document.getElementById('dots');
   slides.innerHTML=list.map(function(o,i){
     return '<div class="slide'+(i===0?' on':'')+'">'+o.t.replace(/[<>]/g,'')+(o.a?'<span class="author">— '+o.a.replace(/[<>]/g,'')+'</span>':'')+'</div>';
@@ -133,28 +133,5 @@
   document.getElementById('prev').onclick=function(){go(cur-1);auto();};
   dots.addEventListener('click',function(e){if(e.target.dataset.i){go(+e.target.dataset.i);auto();}});
   auto();
-
-  /* ---------- Auto-ajuste: el texto crece hasta llenar sin desbordar ----------
-     Como el contenido fluye (grid, sin position:absolute), el texto SIEMPRE
-     tiene altura y es visible; el JS solo elige el mayor tamaño que cabe. */
-  function fit(){
-    var maxH=card.clientHeight, maxW=slides.clientWidth;
-    if(!maxH||!maxW) return;                 // si aún no hay layout, deja el respaldo CSS
-    var lo=10, hi=200, ok=12;
-    for(var i=0;i<13;i++){
-      var mid=(lo+hi)/2;
-      for(var j=0;j<els.length;j++) els[j].style.fontSize=mid+'px';
-      var wOK=true;
-      for(var k=0;k<els.length;k++){ if(els[k].scrollWidth>maxW){ wOK=false; break; } }
-      if(card.scrollHeight<=maxH && wOK){ ok=mid; lo=mid; } else { hi=mid; }
-    }
-    for(var m=0;m<els.length;m++) els[m].style.fontSize=ok.toFixed(1)+'px';
-  }
-
-  var raf;function sch(){cancelAnimationFrame(raf);raf=requestAnimationFrame(fit);}
-  addEventListener('resize',sch);addEventListener('orientationchange',sch);
-  if(window.ResizeObserver)new ResizeObserver(sch).observe(card);   // observa la tarjeta (tamaño estable, sin bucles)
-  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fit);
-  fit();setTimeout(fit,300);
 })();
 </script></body></html>
