@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Arcanum OS · Título</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600&family=Cinzel:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#100c18;
+    --ink:#f2ecff;
+    --ink-dim:#a99bc9;
+    --violet:#b794f6;
+    --violet-deep:#8b5cf6;
+    --edge:#7c47c9;
+    --edge-soft:#5a3a8c;
+    --cyan:#9fe6ff;
+    --cyan-deep:#4aa8ff;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; margin:0; }
+
+  body{
+    background:var(--bg);
+    display:flex;
+    min-height:100%;
+    padding:clamp(10px, 2vmin, 22px);
+    font-family:"Chakra Petch", system-ui, sans-serif;
+  }
+
+  /* ---------- Panel ---------- */
+  .banner{
+    position:relative;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:clamp(4px, 1.4vh, 16px);
+    padding:clamp(12px, 3.5vmin, 34px) clamp(16px, 4vmin, 48px);
+    overflow:hidden;
+    border-radius:clamp(16px, 2.6vmin, 28px);
+    border:1px solid rgba(124,71,201,.35);
+    background:
+      radial-gradient(130% 150% at 50% 40%, #34234f 0%, #211433 44%, #130e1f 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.05),
+      inset 0 0 60px rgba(124,71,201,.12),
+      0 30px 70px -34px rgba(124,71,201,.7);
+  }
+
+  /* ---------- Aura + partículas ---------- */
+  .aura{
+    position:absolute;
+    left:50%; top:50%;
+    width:70%; aspect-ratio:2.6/1;
+    transform:translate(-50%,-50%);
+    background:radial-gradient(closest-side, rgba(139,92,246,.35), transparent 70%);
+    filter:blur(14px);
+    z-index:0;
+    animation:auraPulse 7s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes auraPulse{
+    0%,100%{ opacity:.55; transform:translate(-50%,-50%) scale(1); }
+    50%{ opacity:.85; transform:translate(-50%,-50%) scale(1.08); }
+  }
+  .particles{ position:absolute; inset:0; z-index:0; pointer-events:none; }
+  .particles i{
+    position:absolute;
+    width:.42vmin; height:.42vmin; min-width:2px; min-height:2px;
+    border-radius:50%;
+    background:var(--cyan);
+    box-shadow:0 0 6px var(--cyan), 0 0 12px rgba(120,180,255,.6);
+    opacity:0;
+    animation:drift linear infinite;
+  }
+  @keyframes drift{
+    0%{ opacity:0; transform:translateY(8px) scale(.6); }
+    15%{ opacity:.9; }
+    85%{ opacity:.7; }
+    100%{ opacity:0; transform:translateY(-22px) scale(1); }
+  }
+
+  /* ---------- Filetes + gemas ---------- */
+  .rule{
+    position:relative; z-index:1;
+    flex:0 0 auto;
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:clamp(6px, 1.4vw, 14px);
+  }
+  .line{
+    height:1px; flex:1; max-width:38%;
+    transform-origin:var(--o, left);
+    animation:drawLine .9s ease both;
+  }
+  .line.l{ background:linear-gradient(90deg, transparent, var(--edge-soft) 85%, var(--edge)); --o:left; }
+  .line.r{ background:linear-gradient(90deg, var(--edge), var(--edge-soft) 15%, transparent); --o:right; }
+  @keyframes drawLine{ from{ transform:scaleX(0); opacity:0; } to{ transform:scaleX(1); opacity:1; } }
+
+  .gap{ width:clamp(22px, 7vw, 74px); }
+
+  .gem{
+    position:relative;
+    width:clamp(8px, min(2.2vw, 4vh), 16px);
+    aspect-ratio:1;
+    transform:rotate(45deg);
+    border-radius:2px;
+    background:linear-gradient(135deg, #d8f6ff, var(--cyan-deep) 58%, #7a63d6);
+    box-shadow:0 0 10px rgba(140,210,255,.85), 0 0 22px rgba(120,150,255,.5);
+    animation:gemPulse 3.2s ease-in-out infinite, gemIn .7s ease both;
+  }
+  .gem::after{
+    content:""; position:absolute; inset:24%;
+    border-radius:1px;
+    background:rgba(255,255,255,.75);
+    filter:blur(.6px);
+  }
+  @keyframes gemPulse{
+    0%,100%{ box-shadow:0 0 8px rgba(140,210,255,.7), 0 0 18px rgba(120,150,255,.4); }
+    50%{ box-shadow:0 0 14px rgba(160,225,255,1), 0 0 30px rgba(130,170,255,.7); }
+  }
+  @keyframes gemIn{ from{ transform:rotate(45deg) scale(0); opacity:0; } to{ transform:rotate(45deg) scale(1); opacity:1; } }
+
+  /* ---------- Título (se mide y se escala por JS) ---------- */
+  .title-wrap{
+    position:relative; z-index:1;
+    flex:1 1 auto;
+    min-height:0;
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    animation:fadeIn 1s ease both;
+  }
+  .title{
+    display:inline-block;
+    white-space:nowrap;
+    font-family:"Cinzel", serif;
+    font-weight:700;
+    font-size:120px;         /* tamaño base; JS lo escala para encajar */
+    line-height:1;
+    letter-spacing:.09em;
+    text-indent:.09em;
+    transform-origin:center center;
+    will-change:transform;
+    background:linear-gradient(100deg, #c9b3f5 0%, #f6f1ff 42%, #ffffff 50%, #cdb6f7 58%, #a97fe0 100%);
+    background-size:230% 100%;
+    -webkit-background-clip:text; background-clip:text;
+    color:transparent;
+    filter:drop-shadow(0 2px 14px rgba(183,148,246,.5));
+    animation:sheen 6.5s ease-in-out infinite;
+    transition:filter .4s ease;
+  }
+  @keyframes sheen{ 0%,100%{ background-position:0% 0; } 50%{ background-position:100% 0; } }
+  .banner:hover .title{ filter:drop-shadow(0 2px 24px rgba(199,170,255,.9)); }
+
+  /* ---------- Subtítulo (también se mide y se escala) ---------- */
+  .sub-wrap{
+    position:relative; z-index:1;
+    flex:0 0 auto;
+    width:100%;
+    height:clamp(14px, 4.2vh, 30px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    animation:fadeIn 1s ease .3s both;
+  }
+  .subtitle{
+    display:inline-block;
+    white-space:nowrap;
+    font-size:26px;          /* base; JS lo escala */
+    font-weight:500;
+    letter-spacing:.42em;
+    text-indent:.42em;
+    text-transform:uppercase;
+    color:var(--ink-dim);
+    transform-origin:center center;
+    will-change:transform;
+    transition:opacity .45s ease;
+  }
+  .sub-wrap.swap .subtitle{ opacity:0; }
+
+  @keyframes fadeIn{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+
+  @media (prefers-reduced-motion:reduce){
+    .aura, .gem, .title, .line, .title-wrap, .sub-wrap{ animation:none !important; }
+    .title{ background-position:0 0; }
+    .particles{ display:none; }
+  }
+</style>
+</head>
+<body>
+  <div class="banner" id="banner" role="banner" aria-label="Arcanum OS">
+    <div class="aura" aria-hidden="true"></div>
+    <div class="particles" id="particles" aria-hidden="true"></div>
+
+    <div class="rule" aria-hidden="true">
+      <span class="line l"></span>
+      <span class="gem" style="animation-delay:.15s,.15s"></span>
+      <span class="gap"></span>
+      <span class="gem" style="animation-delay:.28s,.28s"></span>
+      <span class="line r"></span>
+    </div>
+
+    <div class="title-wrap">
+      <h1 class="title" id="title">ARCANUM OS</h1>
+    </div>
+
+    <div class="sub-wrap" id="subWrap">
+      <p class="subtitle" id="subtitle">Sistema de progreso personal</p>
+    </div>
+
+    <div class="rule" aria-hidden="true">
+      <span class="line l"></span>
+      <span class="gem" style="animation-delay:.34s,.34s"></span>
+      <span class="gap"></span>
+      <span class="gem" style="animation-delay:.2s,.2s"></span>
+      <span class="line r"></span>
+    </div>
+  </div>
+
+<script>
+/* =========================================================================
+   ARCANUM OS · Título
+   Edita CONFIG a tu gusto antes de subirlo a GitHub.
+   ========================================================================= */
+const CONFIG = {
+  title: "ARCANUM OS",
+  // Un solo texto = fijo. Agrega más frases para que roten con fundido:
+  // subtitles: ["Sistema de progreso personal", "Nivel · Experiencia · Misiones", "Tu vida, gamificada"],
+  subtitles: ["Sistema de progreso personal"],
+  rotateMs: 4500,
+  particles: 9
+};
+
+const $ = (id) => document.getElementById(id);
+const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const titleEl = $("title");
+const subEl   = $("subtitle");
+titleEl.textContent = CONFIG.title;
+subEl.textContent   = (CONFIG.subtitles && CONFIG.subtitles[0]) || "";
+
+/* ---------- Ajuste: medir el texto y escalarlo para que quepa ---------- */
+function fit(el){
+  const box = el.parentElement;
+  el.style.transform = "scale(1)";          // medir a tamaño natural
+  const t = el.getBoundingClientRect();
+  const b = box.getBoundingClientRect();
+  if (!t.width || !t.height || !b.width || !b.height) return;
+  // margen para que el glow no toque los bordes
+  const s = Math.min((b.width * 0.94) / t.width, (b.height * 0.96) / t.height);
+  el.style.transform = "scale(" + s + ")";
+}
+
+let raf = 0;
+function fitAll(){
+  cancelAnimationFrame(raf);
+  raf = requestAnimationFrame(() => { fit(titleEl); fit(subEl); });
+}
+
+// Recalcular ante cualquier cambio de tamaño del panel
+if ("ResizeObserver" in window){
+  new ResizeObserver(fitAll).observe($("banner"));
+} else {
+  window.addEventListener("resize", fitAll);
+}
+// Al cargar y cuando la fuente esté lista (las métricas cambian con Cinzel)
+fitAll();
+if (document.fonts && document.fonts.ready){
+  document.fonts.ready.then(fitAll);
+}
+window.addEventListener("load", fitAll);
+
+/* ---------- Partículas arcanas ---------- */
+if (CONFIG.particles > 0 && !reduce){
+  const box = $("particles");
+  for (let i = 0; i < CONFIG.particles; i++){
+    const p = document.createElement("i");
+    p.style.left = (5 + Math.random() * 90) + "%";
+    p.style.bottom = (10 + Math.random() * 55) + "%";
+    p.style.animationDuration = (4.5 + Math.random() * 4).toFixed(2) + "s";
+    p.style.animationDelay = (-Math.random() * 6).toFixed(2) + "s";
+    const scale = 0.6 + Math.random() * 1.1;
+    p.style.transform = "scale(" + scale.toFixed(2) + ")";
+    box.appendChild(p);
+  }
+}
+
+/* ---------- Rotación del subtítulo (si hay más de uno) ---------- */
+(function(){
+  const subs = CONFIG.subtitles || [];
+  if (subs.length < 2 || reduce) return;
+  const wrap = $("subWrap");
+  let i = 0;
+  setInterval(() => {
+    wrap.classList.add("swap");
+    setTimeout(() => {
+      i = (i + 1) % subs.length;
+      subEl.textContent = subs[i];
+      fit(subEl);
+      wrap.classList.remove("swap");
+    }, 450);
+  }, CONFIG.rotateMs);
+})();
+</script>
+</body>
+</html>
