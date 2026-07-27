@@ -8,79 +8,65 @@
   :root{--bg:#191919;--void:#0A0611;--panel-2:#1E1033;--violet:#A855F7;--magenta:#E838C8;--cyan:#4CE0F5;--ink:#EFE3FF;--muted:#8E7BB0;--line:rgba(168,85,247,.28)}
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:'Chakra Petch',system-ui,sans-serif}
-  #stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:4px}
-  #root{width:460px;flex:0 0 auto;transform-origin:center center}
-  .card{background:radial-gradient(90% 70% at 50% 0%,rgba(168,85,247,.18),transparent 60%),linear-gradient(160deg,var(--panel-2),var(--void) 70%);border:1px solid var(--line);border-radius:20px;padding:16px 14px 10px}
-  .head{display:flex;justify-content:space-between;align-items:center;padding:0 6px 6px}
-  .head h1{font-family:'Silkscreen',monospace;font-size:10px;letter-spacing:.2em;color:var(--magenta);font-weight:400}
-  .head em{font-style:normal;font-size:11px;color:var(--muted);font-family:'Silkscreen',monospace;letter-spacing:.12em}
-  svg{width:100%;height:auto;display:block;overflow:visible}
+  /* Panel: fijo a TODO el bloque */
+  .app{position:fixed;inset:0;display:flex;flex-direction:column;overflow:hidden;
+    background:radial-gradient(90% 70% at 50% 0%,rgba(168,85,247,.18),transparent 60%),linear-gradient(160deg,var(--panel-2),var(--void) 70%);
+    border:1px solid var(--line);border-radius:clamp(0px,2vmin,20px);padding:clamp(12px,2.6vmin,20px) clamp(12px,2.6vmin,18px)}
+  .head{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:0 6px clamp(6px,1.4vmin,10px)}
+  .head h1{font-family:'Silkscreen',monospace;font-size:clamp(9px,1.9vmin,12px);letter-spacing:.2em;color:var(--magenta);font-weight:400}
+  .head em{font-style:normal;font-size:clamp(9px,1.7vmin,11px);color:var(--muted);font-family:'Silkscreen',monospace;letter-spacing:.12em}
+  /* Zona del gráfico: llena todo el espacio restante */
+  .wrap{flex:1;min-height:0;min-width:0;display:flex;align-items:center;justify-content:center}
+  svg{width:100%;height:100%;display:block;overflow:visible}
   .grid{fill:none;stroke:var(--line);stroke-width:1}.spoke{stroke:rgba(168,85,247,.2);stroke-width:1}
   .area{fill:url(#g1);stroke:var(--magenta);stroke-width:2;filter:drop-shadow(0 0 10px rgba(232,56,200,.55));transform-origin:center;animation:pop .9s cubic-bezier(.2,.9,.25,1) both}
   .dot{fill:#fff;stroke:var(--magenta);stroke-width:2}
-  .lab{font-family:'Chakra Petch',sans-serif;font-size:12px;font-weight:700;fill:var(--ink)}
-  .val{font-family:'Silkscreen',monospace;font-size:9px;fill:var(--cyan);letter-spacing:.08em}
-  .empty{padding:34px 10px;text-align:center;color:var(--muted);font-size:13px;line-height:1.6}
+  .lab{font-family:'Chakra Petch',sans-serif;font-size:15px;font-weight:700;fill:var(--ink)}
+  .val{font-family:'Silkscreen',monospace;font-size:10px;fill:var(--cyan);letter-spacing:.08em}
+  .empty{margin:auto;text-align:center;color:var(--muted);font-size:clamp(12px,2.6vmin,15px);line-height:1.6;padding:6% 10%}
   @keyframes pop{from{transform:scale(.2);opacity:0}to{transform:scale(1);opacity:1}}
   @media (prefers-reduced-motion:reduce){.area{animation:none}}
 </style></head>
-<body><div id="stage"><div id="root"><div class="card">
-  <div class="head"><h1 id="titulo">MAPA DE HABILIDADES</h1><em id="meta"></em></div>
-  <div id="wrap"><div class="empty">Cargando…</div></div>
-</div></div></div>
+<body>
+  <div class="app">
+    <div class="head"><h1 id="titulo">MAPA DE HABILIDADES</h1><em id="meta"></em></div>
+    <div class="wrap" id="wrap"><div class="empty">Cargando…</div></div>
+  </div>
 <script>
 (function(){
   var q=new URLSearchParams(location.search),api=q.get('api');
   var dec=function(s){try{return decodeURIComponent(s);}catch(e){return s;}};
   var split=function(s){return dec(s||'').split(/[,|;]/).map(function(x){return x.trim();}).filter(function(x){return x.length;});};
   document.getElementById('titulo').textContent=dec(q.get('titulo')||'MAPA DE HABILIDADES').toUpperCase();
+
   function draw(labels,vals){
     var wrap=document.getElementById('wrap');
-    if(labels.length<3||vals.length<3){wrap.innerHTML='<div class="empty">Se necesitan al menos 3 habilidades vinculadas al personaje.</div>';fit();return;}
+    if(labels.length<3||vals.length<3){wrap.innerHTML='<div class="empty">Se necesitan al menos 3 habilidades vinculadas al personaje.</div>';return;}
     var n=Math.min(labels.length,vals.length);labels=labels.slice(0,n);vals=vals.slice(0,n).map(function(v){return isNaN(v)?0:v;});
     var max=parseFloat(q.get('max'));if(isNaN(max)||max<=0){max=Math.max.apply(null,vals);max=Math.ceil(Math.max(max,1)/5)*5;}
     document.getElementById('meta').textContent='MAX '+max;
-    var W=420,H=360,cx=W/2,cy=H/2+4,R=Math.min(W,H)/2-64,rings=4;
+    /* viewBox amplio: las etiquetas SIEMPRE caben; el SVG llena la zona (preserveAspectRatio) */
+    var W=560,H=500,cx=W/2,cy=H/2+2,R=146,rings=4;
     var pt=function(i,r){var a=(Math.PI*2*i/n)-Math.PI/2;return[cx+Math.cos(a)*r,cy+Math.sin(a)*r];};
     var poly=function(r){var p=[];for(var i=0;i<n;i++){p.push(pt(i,r).join(','));}return p.join(' ');};
-    var s='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">';
+    var s='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">';
     s+='<defs><radialGradient id="g1"><stop offset="0%" stop-color="#A855F7" stop-opacity=".65"/><stop offset="100%" stop-color="#E838C8" stop-opacity=".22"/></radialGradient></defs>';
     for(var k=rings;k>=1;k--){s+='<polygon class="grid" points="'+poly(R*k/rings)+'"/>';}
     for(var i=0;i<n;i++){var e=pt(i,R);s+='<line class="spoke" x1="'+cx+'" y1="'+cy+'" x2="'+e[0]+'" y2="'+e[1]+'"/>';}
     var pts=[];for(var i=0;i<n;i++){var r=R*Math.max(0,Math.min(1,vals[i]/max));pts.push(pt(i,r));}
     s+='<polygon class="area" points="'+pts.map(function(p){return p.join(',');}).join(' ')+'"/>';
     pts.forEach(function(p){s+='<circle class="dot" cx="'+p[0]+'" cy="'+p[1]+'" r="3.5"/>';});
-    for(var i=0;i<n;i++){var p=pt(i,R+24),anchor='middle';if(p[0]>cx+8)anchor='start';else if(p[0]<cx-8)anchor='end';
-      s+='<text class="lab" x="'+p[0]+'" y="'+p[1]+'" text-anchor="'+anchor+'">'+labels[i].replace(/[<>&]/g,'')+'</text>';
-      s+='<text class="val" x="'+p[0]+'" y="'+(p[1]+14)+'" text-anchor="'+anchor+'">NV '+vals[i]+'</text>';}
-    s+='</svg>';wrap.innerHTML=s;fit();
+    for(var i=0;i<n;i++){var p=pt(i,R+26),anchor='middle';if(p[0]>cx+8)anchor='start';else if(p[0]<cx-8)anchor='end';
+      var name=labels[i].replace(/[<>&]/g,'');if(name.length>12)name=name.slice(0,11)+'…';
+      s+='<text class="lab" x="'+p[0]+'" y="'+p[1]+'" text-anchor="'+anchor+'">'+name+'</text>';
+      s+='<text class="val" x="'+p[0]+'" y="'+(p[1]+15)+'" text-anchor="'+anchor+'">NV '+vals[i]+'</text>';}
+    s+='</svg>';wrap.innerHTML=s;
   }
-  function hint(){document.getElementById('wrap').innerHTML='<div class="empty"><span style="font-family:Silkscreen,monospace;font-size:10px;letter-spacing:.2em;color:#E838C8">RADAR SIN CONECTAR</span><br><br>Copia el texto de la propiedad <b style="color:#EFE3FF">URL Radar</b> de tu base <b style="color:#EFE3FF">PERSONAJE</b> y pega esa URL aquí.</div>';fit();}
+  function hint(){document.getElementById('wrap').innerHTML='<div class="empty"><span style="font-family:Silkscreen,monospace;font-size:11px;letter-spacing:.2em;color:#E838C8">RADAR SIN CONECTAR</span><br><br>Copia el texto de la propiedad <b style="color:#EFE3FF">URL Radar</b> de tu base <b style="color:#EFE3FF">PERSONAJE</b> y pega esa URL aquí.</div>';}
   function load(){if(!api&&!q.get('l')){hint();return;}if(!api){draw(split(q.get('l')),split(q.get('v')).map(parseFloat));return;}
-    fetch(api,{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){if(j.error)throw 0;draw(j.habilidades.map(function(h){return h.nombre;}),j.habilidades.map(function(h){return h.nivel;}));}).catch(function(){document.getElementById('wrap').innerHTML='<div class="empty">Sin conexión con el motor. Revisa tu Worker.</div>';fit();});}
-  
-  var root=document.getElementById('root'),el=root;
-  
-  function fit(){
-    el.style.transform='none';
-    /* Modificación: Usamos un padding interno (24px) y eliminamos el Math.max/min para liberar el escalado */
-    var padding = 24; 
-    var s = Math.min((innerWidth - padding) / el.offsetWidth, (innerHeight - padding) / el.offsetHeight);
-    el.style.transform = 'scale(' + s + ')';
-  }
-  
-  function layout(){
-    root.style.width=(innerWidth<560?'380':'460')+'px';
-    fit();
-  }
-  
-  var raf;function sch(){cancelAnimationFrame(raf);raf=requestAnimationFrame(fit);}
-  addEventListener('resize',function(){cancelAnimationFrame(raf);raf=requestAnimationFrame(layout);});
-  addEventListener('orientationchange',function(){cancelAnimationFrame(raf);raf=requestAnimationFrame(layout);});
-  if(window.ResizeObserver)new ResizeObserver(sch).observe(el);
-  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fit);
-  
-  load();layout();setTimeout(layout,300);
+    fetch(api,{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){if(j.error)throw 0;draw(j.habilidades.map(function(h){return h.nombre;}),j.habilidades.map(function(h){return h.nivel;}));}).catch(function(){document.getElementById('wrap').innerHTML='<div class="empty">Sin conexión con el motor. Revisa tu Worker.</div>';});}
+
+  load();
   if(api){setInterval(load,60000);document.addEventListener('visibilitychange',function(){if(!document.hidden)load();});}
 })();
 </script></body></html>
