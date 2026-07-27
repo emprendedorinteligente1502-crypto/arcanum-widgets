@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Arcanum OS · Reloj</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=Orbitron:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#191919;
+    --bg-2:#191919;
+    --card-top:#3f2b63;
+    --card-bot:#231536;
+    --edge:#7c47c9;
+    --edge-soft:#553688;
+    --ink:#efeafb;
+    --ink-dim:#a99bc9;
+    --ink-faint:#6f6390;
+    --accent:#b794f6;
+    --accent-2:#8b5cf6;
+    --track:#241a3a;
+    --seam:rgba(0,0,0,.5);
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; margin:0; }
+
+  body{
+    font-family:"Chakra Petch", system-ui, sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(120% 90% at 50% -10%, #251a3d 0%, var(--bg) 45%, var(--bg-2) 100%);
+    -webkit-font-smoothing:antialiased;
+    display:flex;
+    min-height:100%;
+  }
+
+  /* ---------- Estructura ---------- */
+  .widget{
+    width:100%;
+    max-width:1080px;
+    margin:auto;
+    padding:clamp(16px, 3.2vmin, 34px);
+    display:flex;
+    flex-direction:column;
+    gap:clamp(14px, 2.6vmin, 26px);
+  }
+
+  /* ---------- Barra superior: saludo + clima ---------- */
+  .top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .greet{
+    display:inline-flex;
+    align-items:center;
+    gap:.55em;
+    font-size:clamp(.9rem, 2.4vmin, 1.15rem);
+    font-weight:500;
+    letter-spacing:.04em;
+    color:var(--ink);
+  }
+  .greet-i{
+    display:inline-grid;
+    place-items:center;
+    width:1.9em; height:1.9em;
+    border-radius:50%;
+    background:linear-gradient(180deg, rgba(183,148,246,.22), rgba(139,92,246,.08));
+    border:1px solid var(--edge-soft);
+    color:var(--accent);
+    font-size:.9em;
+  }
+  .wx{
+    display:inline-flex;
+    align-items:center;
+    gap:.55em;
+    padding:.42em .8em;
+    border-radius:999px;
+    background:linear-gradient(180deg, rgba(63,43,99,.55), rgba(35,21,54,.55));
+    border:1px solid var(--edge-soft);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+    font-size:clamp(.82rem, 2.1vmin, 1rem);
+    white-space:nowrap;
+  }
+  .wx-i{ color:var(--accent); font-size:1.15em; line-height:1; }
+  .wx-t{ font-weight:700; font-family:"Orbitron"; letter-spacing:.02em; }
+  .muted{ color:var(--ink-dim); }
+
+  /* ---------- Escenario principal: reloj + panel ---------- */
+  .stage{
+    display:flex;
+    align-items:stretch;
+    gap:clamp(18px, 3.4vmin, 40px);
+  }
+
+  /* --- Reloj flip --- */
+  .clock{
+    flex:1 1 auto;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    gap:clamp(8px, 1.8vmin, 18px);
+  }
+  .unit{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:clamp(6px, 1.4vmin, 12px);
+  }
+  .card{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:clamp(.28em, 2.6vmin, .5em) clamp(.34em, 3.4vmin, .62em);
+    min-width:clamp(1.5em, 20vmin, 2.1em);
+    border-radius:clamp(14px, 2.6vmin, 24px);
+    background:linear-gradient(180deg, var(--card-top) 0%, var(--card-top) 49.6%, var(--card-bot) 50.4%, var(--card-bot) 100%);
+    border:1px solid var(--edge-soft);
+    box-shadow:
+      0 0 0 1px rgba(124,71,201,.22),
+      0 22px 46px -20px rgba(124,71,201,.75),
+      inset 0 1px 0 rgba(255,255,255,.07);
+    overflow:hidden;
+    transform:perspective(600px);
+  }
+  .card::before{
+    content:"";
+    position:absolute; inset:0 0 50% 0;
+    background:linear-gradient(180deg, rgba(255,255,255,.09), transparent);
+    pointer-events:none;
+  }
+  .card::after{ /* costura del flip */
+    content:"";
+    position:absolute; left:0; right:0; top:50%;
+    height:2px; transform:translateY(-1px);
+    background:linear-gradient(90deg, transparent, var(--seam) 20%, var(--seam) 80%, transparent);
+    box-shadow:0 1px 0 rgba(255,255,255,.06);
+    z-index:2;
+  }
+  .digit{
+    font-family:"Orbitron";
+    font-weight:800;
+    font-size:clamp(2.7rem, 15vmin, 8rem);
+    line-height:1;
+    letter-spacing:.02em;
+    color:var(--ink);
+    text-shadow:0 2px 22px rgba(183,148,246,.4);
+    position:relative; z-index:1;
+    font-variant-numeric:tabular-nums;
+  }
+  .card.is-flip{ animation:flip .5s ease; }
+  @keyframes flip{
+    0%{ transform:perspective(600px) rotateX(0); }
+    45%{ transform:perspective(600px) rotateX(-14deg); filter:brightness(1.22); }
+    100%{ transform:perspective(600px) rotateX(0); }
+  }
+  .sub{
+    font-size:clamp(.62rem, 1.8vmin, .9rem);
+    font-weight:600;
+    letter-spacing:.34em;
+    text-indent:.34em;
+    color:var(--ink-dim);
+    text-transform:uppercase;
+  }
+
+  /* separador con dos puntos + segundos */
+  .sep{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    align-self:stretch;
+    padding-bottom:clamp(1.4em, 5vmin, 2.6em);
+    gap:.2em;
+  }
+  .colon{
+    font-family:"Orbitron";
+    font-weight:700;
+    color:var(--accent);
+    font-size:clamp(1.6rem, 8vmin, 4.2rem);
+    line-height:.8;
+    animation:blink 1s steps(1,end) infinite;
+    text-shadow:0 0 18px rgba(183,148,246,.5);
+  }
+  @keyframes blink{ 50%{ opacity:.18; } }
+  .secs{
+    font-family:"Orbitron";
+    font-weight:600;
+    font-size:clamp(.7rem, 2vmin, 1rem);
+    color:var(--ink-faint);
+    letter-spacing:.1em;
+    font-variant-numeric:tabular-nums;
+  }
+
+  /* --- Panel lateral: fecha + progreso --- */
+  .panel{
+    flex:0 0 clamp(220px, 30%, 300px);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:clamp(14px, 2.6vmin, 22px);
+    padding-left:clamp(14px, 2.6vmin, 26px);
+    border-left:1px solid rgba(124,71,201,.22);
+  }
+  .p-date{
+    display:flex;
+    align-items:center;
+    gap:.7em;
+  }
+  .p-day{
+    display:grid;
+    place-items:center;
+    width:clamp(2.4em, 9vmin, 2.9em);
+    height:clamp(2.4em, 9vmin, 2.9em);
+    border-radius:14px;
+    background:linear-gradient(180deg, var(--card-top), var(--card-bot));
+    border:1px solid var(--edge);
+    box-shadow:0 12px 26px -14px rgba(124,71,201,.8), inset 0 1px 0 rgba(255,255,255,.08);
+    font-family:"Orbitron";
+    font-weight:800;
+    font-size:clamp(1.3rem, 4.4vmin, 2rem);
+    color:var(--ink);
+  }
+  .p-when{ display:flex; flex-direction:column; gap:.15em; line-height:1.15; }
+  .p-month{
+    font-size:clamp(.95rem, 2.6vmin, 1.25rem);
+    font-weight:600;
+    letter-spacing:.02em;
+    text-transform:capitalize;
+  }
+  .p-meta{
+    font-size:clamp(.68rem, 1.8vmin, .82rem);
+    letter-spacing:.06em;
+    color:var(--ink-dim);
+  }
+
+  .bars{ display:flex; flex-direction:column; gap:clamp(10px, 1.8vmin, 16px); }
+  .bar-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    font-size:clamp(.7rem, 1.9vmin, .86rem);
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-dim);
+    margin-bottom:.4em;
+  }
+  .bar-head b{
+    font-family:"Orbitron";
+    font-weight:700;
+    letter-spacing:.02em;
+    color:var(--accent);
+  }
+  .track{
+    height:clamp(7px, 1.4vmin, 10px);
+    border-radius:999px;
+    background:var(--track);
+    border:1px solid rgba(124,71,201,.28);
+    overflow:hidden;
+  }
+  .track > i{
+    display:block;
+    height:100%;
+    width:0%;
+    border-radius:999px;
+    background:linear-gradient(90deg, var(--accent-2), var(--accent));
+    box-shadow:0 0 12px rgba(183,148,246,.6);
+    transition:width .6s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ---------- Franja de la semana ---------- */
+  .week{
+    display:grid;
+    grid-template-columns:repeat(7, 1fr);
+    gap:clamp(5px, 1.2vmin, 10px);
+  }
+  .wd{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:.25em;
+    padding:clamp(.4em, 1.4vmin, .7em) 0;
+    border-radius:12px;
+    background:rgba(63,43,99,.16);
+    border:1px solid transparent;
+  }
+  .wd-l{
+    font-size:clamp(.6rem, 1.7vmin, .78rem);
+    font-weight:600;
+    letter-spacing:.1em;
+    color:var(--ink-faint);
+  }
+  .wd-n{
+    font-family:"Orbitron";
+    font-weight:600;
+    font-size:clamp(.82rem, 2.2vmin, 1.05rem);
+    color:var(--ink-dim);
+    font-variant-numeric:tabular-nums;
+  }
+  .wd.today{
+    background:linear-gradient(180deg, var(--card-top), var(--card-bot));
+    border-color:var(--edge);
+    box-shadow:0 12px 26px -16px rgba(124,71,201,.9), inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  .wd.today .wd-l{ color:var(--accent); }
+  .wd.today .wd-n{ color:var(--ink); }
+  .wd.weekend .wd-l{ color:#c79bd8; }
+
+  /* ---------- Móvil: todo en columna (flex column) ---------- */
+  @media (max-width:640px){
+    .stage{ flex-direction:column; align-items:stretch; }
+    .clock{ order:0; }
+    .panel{
+      order:1;
+      flex-basis:auto;
+      padding-left:0;
+      padding-top:clamp(14px, 3vmin, 20px);
+      border-left:0;
+      border-top:1px solid rgba(124,71,201,.22);
+    }
+    .top{ justify-content:center; }
+    .p-date{ justify-content:center; }
+  }
+  @media (max-width:380px){
+    .sub{ letter-spacing:.22em; text-indent:.22em; }
+    .week{ gap:4px; }
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .colon{ animation:none; }
+    .card.is-flip{ animation:none; }
+    .track > i{ transition:none; }
+  }
+
+  .sr-only{
+    position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+    overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+  }
+</style>
+</head>
+<body>
+  <div class="widget" role="group" aria-label="Reloj Arcanum OS">
+
+    <header class="top">
+      <div class="greet">
+        <span class="greet-i" id="greetIcon" aria-hidden="true">☾</span>
+        <span id="greetText">Buenas noches</span>
+      </div>
+      <div class="wx" id="wx" hidden>
+        <span class="wx-i" id="wxIcon" aria-hidden="true">☀</span>
+        <span class="wx-t" id="wxTemp">--°</span>
+        <span class="wx-d muted" id="wxDesc"></span>
+      </div>
+    </header>
+
+    <main class="stage">
+      <section class="clock" aria-hidden="true">
+        <div class="unit">
+          <div class="card"><span class="digit" id="hh">11</span></div>
+          <span class="sub" id="meridiem">PM</span>
+        </div>
+        <div class="sep">
+          <span class="colon" id="colon">:</span>
+          <span class="secs" id="ss">00</span>
+        </div>
+        <div class="unit">
+          <div class="card"><span class="digit" id="mm">07</span></div>
+          <span class="sub" id="dow">DOMINGO</span>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="p-date">
+          <span class="p-day" id="dayNum">26</span>
+          <div class="p-when">
+            <span class="p-month" id="monthYear">julio 2026</span>
+            <span class="p-meta" id="dateMeta">Día 207 · Semana 30</span>
+          </div>
+        </div>
+
+        <div class="bars">
+          <div class="bar">
+            <div class="bar-head"><span>El día</span><b id="dayPct">0%</b></div>
+            <div class="track"><i id="dayBar"></i></div>
+          </div>
+          <div class="bar">
+            <div class="bar-head"><span>La semana</span><b id="weekPct">0%</b></div>
+            <div class="track"><i id="weekBar"></i></div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="week" id="week" aria-hidden="true"></footer>
+
+    <div class="sr-only" id="live" aria-live="polite"></div>
+  </div>
+
+<script>
+/* =========================================================================
+   ARCANUM OS · Reloj
+   Configuración editable — cámbiala a tu gusto antes de subir a GitHub.
+   ========================================================================= */
+const CONFIG = {
+  locale: "es-MX",          // idioma de fecha/día
+  use24Hour: false,         // true = formato 24h (oculta AM/PM)
+  weekStartsMonday: true,   // true = semana L→D · false = D→S
+  showWeather: true,        // muestra el clima (Open-Meteo, sin API key)
+  autoLocate: true,         // intenta geolocalizar; si falla usa las coords de abajo
+  latitude: 19.4326,        // por defecto: Ciudad de México
+  longitude: -99.1332
+};
+
+const $ = (id) => document.getElementById(id);
+const pad = (n) => String(n).padStart(2, "0");
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+let prevHH = null, prevMM = null, prevDay = null;
+
+function setDigit(el, value){
+  if (el.textContent !== value){
+    el.textContent = value;
+    const card = el.parentElement;
+    card.classList.remove("is-flip");
+    void card.offsetWidth;      // reinicia la animación
+    card.classList.add("is-flip");
+  }
+}
+
+function isoWeek(d){
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = t.getUTCDay() || 7;
+  t.setUTCDate(t.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+  return Math.ceil((((t - yearStart) / 86400000) + 1) / 7);
+}
+
+function startOfWeek(now){
+  const day = now.getDay();                 // 0 dom … 6 sáb
+  const diff = CONFIG.weekStartsMonday ? (day === 0 ? 6 : day - 1) : day;
+  const s = new Date(now);
+  s.setDate(now.getDate() - diff);
+  s.setHours(0, 0, 0, 0);
+  return s;
+}
+
+function buildWeek(now){
+  const week = $("week");
+  const start = startOfWeek(now);
+  const letters = CONFIG.weekStartsMonday
+    ? ["L", "M", "M", "J", "V", "S", "D"]
+    : ["D", "L", "M", "M", "J", "V", "S"];
+  const todayKey = now.toDateString();
+  week.innerHTML = "";
+  for (let i = 0; i < 7; i++){
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    const cell = document.createElement("div");
+    cell.className = "wd";
+    const wday = d.getDay();
+    if (wday === 0 || wday === 6) cell.classList.add("weekend");
+    if (d.toDateString() === todayKey) cell.classList.add("today");
+    cell.innerHTML =
+      '<span class="wd-l">' + letters[i] + '</span>' +
+      '<span class="wd-n">' + d.getDate() + '</span>';
+    week.appendChild(cell);
+  }
+}
+
+function greeting(h){
+  if (h < 6)  return ["Buenas noches", "☾"];
+  if (h < 12) return ["Buenos días",   "☀"];
+  if (h < 19) return ["Buenas tardes", "☀"];
+  return ["Buenas noches", "☾"];
+}
+
+function tick(){
+  const now = new Date();
+  const h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+
+  // Hora
+  let hh = CONFIG.use24Hour ? h : (h % 12 || 12);
+  setDigit($("hh"), pad(hh));
+  setDigit($("mm"), pad(m));
+  $("ss").textContent = pad(s);
+
+  // Meridiano
+  const meri = $("meridiem");
+  if (CONFIG.use24Hour){ meri.hidden = true; }
+  else { meri.hidden = false; meri.textContent = h >= 12 ? "PM" : "AM"; }
+
+  // Día de la semana
+  $("dow").textContent = now.toLocaleDateString(CONFIG.locale, { weekday: "long" }).toUpperCase();
+
+  // Saludo
+  const [gText, gIcon] = greeting(h);
+  $("greetText").textContent = gText;
+  $("greetIcon").textContent = gIcon;
+
+  // Fecha (solo cuando cambia el día)
+  const dayKey = now.toDateString();
+  if (dayKey !== prevDay){
+    prevDay = dayKey;
+    $("dayNum").textContent = now.getDate();
+    $("monthYear").textContent = cap(now.toLocaleDateString(CONFIG.locale, { month: "long" })) + " " + now.getFullYear();
+    const startY = new Date(now.getFullYear(), 0, 0);
+    const doy = Math.floor((now - startY) / 86400000);
+    $("dateMeta").textContent = "Día " + doy + " · Semana " + isoWeek(now);
+    buildWeek(now);
+  }
+
+  // Progreso del día
+  const dayP = ((h * 3600 + m * 60 + s) / 86400) * 100;
+  $("dayBar").style.width = dayP.toFixed(1) + "%";
+  $("dayPct").textContent = Math.round(dayP) + "%";
+
+  // Progreso de la semana
+  const sw = startOfWeek(now);
+  const weekP = Math.min(100, ((now - sw) / (7 * 86400000)) * 100);
+  $("weekBar").style.width = weekP.toFixed(1) + "%";
+  $("weekPct").textContent = Math.round(weekP) + "%";
+
+  // Lectura para lectores de pantalla (al cambiar el minuto)
+  if (m !== prevMM){
+    prevMM = m;
+    $("live").textContent = hh + ":" + pad(m) + (CONFIG.use24Hour ? "" : (h >= 12 ? " PM" : " AM"));
+  }
+}
+
+/* ---------- Clima (Open-Meteo · sin API key) ---------- */
+const WMO = {
+  0:["Despejado","☀"], 1:["Mayormente despejado","🌤"], 2:["Parcialmente nublado","⛅"],
+  3:["Nublado","☁"], 45:["Niebla","🌫"], 48:["Niebla","🌫"],
+  51:["Llovizna","🌦"], 53:["Llovizna","🌦"], 55:["Llovizna","🌦"],
+  61:["Lluvia","🌧"], 63:["Lluvia","🌧"], 65:["Lluvia fuerte","🌧"],
+  71:["Nieve","🌨"], 73:["Nieve","🌨"], 75:["Nieve","🌨"],
+  80:["Chubascos","🌦"], 81:["Chubascos","🌧"], 82:["Chubascos","🌧"],
+  95:["Tormenta","⛈"], 96:["Tormenta","⛈"], 99:["Tormenta","⛈"]
+};
+
+async function fetchWeather(lat, lng){
+  try{
+    const url = "https://api.open-meteo.com/v1/forecast?latitude=" + lat +
+                "&longitude=" + lng + "&current=temperature_2m,weather_code&timezone=auto";
+    const r = await fetch(url);
+    if (!r.ok) throw new Error("bad response");
+    const d = await r.json();
+    const t = Math.round(d.current.temperature_2m);
+    const [desc, icon] = WMO[d.current.weather_code] || ["", "•"];
+    $("wxTemp").textContent = t + "°C";
+    $("wxDesc").textContent = desc;
+    $("wxIcon").textContent = icon;
+    $("wx").hidden = false;
+  }catch(e){
+    $("wx").hidden = true;   // si algo falla, simplemente no se muestra
+  }
+}
+
+function initWeather(){
+  if (!CONFIG.showWeather) return;
+  const useFallback = () => fetchWeather(CONFIG.latitude, CONFIG.longitude);
+  if (CONFIG.autoLocate && "geolocation" in navigator){
+    navigator.geolocation.getCurrentPosition(
+      (p) => fetchWeather(p.coords.latitude, p.coords.longitude),
+      useFallback,
+      { timeout: 5000, maximumAge: 600000 }
+    );
+  } else {
+    useFallback();
+  }
+}
+
+/* ---------- Arranque ---------- */
+tick();
+setInterval(tick, 1000);
+initWeather();
+setInterval(initWeather, 15 * 60 * 1000);  // refresca el clima cada 15 min
+</script>
+</body>
+</html>
