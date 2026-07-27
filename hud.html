@@ -9,7 +9,7 @@
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Space Grotesk',system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
   #stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:4px}
-  #root{width:660px;flex:0 0 auto;transform-origin:center center}
+  #root{flex:0 0 auto;transform-origin:center center}
   .card{position:relative;overflow:hidden;background:radial-gradient(120% 90% at 8% 0%,rgba(232,56,200,.20),transparent 55%),radial-gradient(120% 120% at 100% 100%,rgba(76,224,245,.12),transparent 50%),linear-gradient(160deg,var(--panel-2),var(--void) 70%);border:1px solid var(--line);border-radius:20px;padding:22px}
   .card::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:44px 44px;-webkit-mask-image:radial-gradient(80% 60% at 50% 0%,#000,transparent 75%);mask-image:radial-gradient(80% 60% at 50% 0%,#000,transparent 75%)}
   .card>*{position:relative}
@@ -36,6 +36,23 @@
   .stat small{font-family:'Silkscreen',monospace;font-size:8px;letter-spacing:.14em;color:var(--muted)}
   .stat:nth-child(2) b{color:var(--magenta)}.stat:nth-child(3) b{color:var(--cyan)}
   .err{font-size:12px;color:var(--magenta);margin-top:10px;display:none}
+
+  /* ===== MODO RETRATO (móvil): tarjeta vertical, contenido grande ===== */
+  #root.compact .card{padding:28px 24px}
+  #root.compact .top{flex-direction:column;text-align:center;gap:14px}
+  #root.compact .sigil{width:82px;height:82px;font-size:36px}
+  #root.compact .who{width:100%;flex:0 0 auto}
+  #root.compact .name{white-space:normal;font-size:30px;line-height:1.14}
+  #root.compact .title{white-space:normal;font-size:13px;margin-top:4px}
+  #root.compact .lvl{text-align:center}
+  #root.compact .lvl .n{font-size:52px}
+  #root.compact .lvl .k{font-size:10px}
+  #root.compact .meter{margin-top:22px}
+  #root.compact .shard{height:22px}
+  #root.compact .stats{margin-top:22px}
+  #root.compact .stat{padding:16px 12px;text-align:center}
+  #root.compact .stat b{font-size:26px}
+  #root.compact .stat small{font-size:9px}
   @media (prefers-reduced-motion:reduce){.fill{transition:none}}
 </style></head>
 <body><div id="stage"><div id="root"><div class="card">
@@ -52,21 +69,19 @@
 <script>
 (function(){
   var q=new URLSearchParams(location.search),api=q.get('api');
-  function paint(d){document.getElementById('sigil').textContent=d.icono||'🔮';document.getElementById('clase').textContent=(d.clase||'ARCANISTA').toUpperCase();
-    document.getElementById('nombre').textContent=d.nombre||'Sin nombre';document.getElementById('titulo').textContent=d.titulo||'—';document.getElementById('nivel').textContent=d.nivel;
-    var xp=+d.xp||0,max=Math.max(+d.xpmax||100,1),pct=Math.max(0,Math.min(100,xp/max*100));
-    document.getElementById('xptxt').textContent=Math.round(xp)+' / '+Math.round(max)+' XP';
-    requestAnimationFrame(function(){document.getElementById('fill').style.width=pct+'%';});
-    document.getElementById('s1').textContent=d.misiones;document.getElementById('s2').textContent=d.racha;document.getElementById('s3').textContent=d.habilidades;}
-  function fromParams(){var g=function(k,dv){var v=q.get(k);return(v===null||v==='')?dv:v;};
-    return {icono:g('icono','🔮'),clase:g('clase','ARCANISTA'),nombre:g('nombre','Sin nombre'),titulo:g('titulo','—'),nivel:g('nivel','1'),xp:g('xp','0'),xpmax:g('xpmax','100'),misiones:g('misiones','0'),racha:g('racha','0'),habilidades:g('habilidades','0')};}
+  function paint(d){document.getElementById('sigil').textContent=d.icono||'🔮';document.getElementById('clase').textContent=(d.clase||'ARCANISTA').toUpperCase();document.getElementById('nombre').textContent=d.nombre||'Sin nombre';document.getElementById('titulo').textContent=d.titulo||'—';document.getElementById('nivel').textContent=d.nivel;var xp=+d.xp||0,max=Math.max(+d.xpmax||100,1),pct=Math.max(0,Math.min(100,xp/max*100));document.getElementById('xptxt').textContent=Math.round(xp)+' / '+Math.round(max)+' XP';requestAnimationFrame(function(){document.getElementById('fill').style.width=pct+'%';});document.getElementById('s1').textContent=d.misiones;document.getElementById('s2').textContent=d.racha;document.getElementById('s3').textContent=d.habilidades;layout();}
+  function fromParams(){var g=function(k,dv){var v=q.get(k);return(v===null||v==='')?dv:v;};return {icono:g('icono','🔮'),clase:g('clase','ARCANISTA'),nombre:g('nombre','Sin nombre'),titulo:g('titulo','—'),nivel:g('nivel','1'),xp:g('xp','0'),xpmax:g('xpmax','100'),misiones:g('misiones','0'),racha:g('racha','0'),habilidades:g('habilidades','0')};}
   function err(m){var e=document.getElementById('err');e.style.display='block';e.textContent=m;}
-  function load(){if(!api){paint(fromParams());return;}fetch(api,{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){if(j.error)throw 0;paint(j.personaje);}).catch(function(){paint(fromParams());err('Sin conexión con el motor. Revisa tu Worker.');});}
-  load();if(api){setInterval(load,60000);document.addEventListener('visibilitychange',function(){if(!document.hidden)load();});}
-  var el=document.getElementById('root');
+  function hint(){document.querySelector('.card').innerHTML='<div style="text-align:center;padding:28px 20px;color:#8E7BB0;font-size:13px;line-height:1.7"><div style="font-family:Silkscreen,monospace;font-size:10px;letter-spacing:.2em;color:#E838C8;margin-bottom:10px">HUD SIN CONECTAR</div>Abre tu base <b style="color:#EFE3FF">PERSONAJE</b>, copia el texto de la propiedad <b style="color:#EFE3FF">URL HUD</b> y pega <b style="color:#EFE3FF">esa</b> URL aquí.<br>No pegues el enlace corto del widget.</div>';fit();}
+  function load(){if(!api&&!q.has('nombre')&&!q.has('nivel')&&!q.has('xp')){hint();return;}if(!api){paint(fromParams());return;}fetch(api,{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){if(j.error)throw 0;paint(j.personaje);}).catch(function(){paint(fromParams());err('Sin conexión con el motor. Revisa tu Worker.');});}
+
+  var root=document.getElementById('root'),el=root;
   function fit(){el.style.transform='none';var s=Math.min((innerWidth-8)/el.offsetWidth,(innerHeight-8)/el.offsetHeight);s=Math.max(.12,Math.min(s,1.6));el.style.transform='scale('+s+')';}
-  var raf;function sch(){cancelAnimationFrame(raf);raf=requestAnimationFrame(fit);}
-  addEventListener('resize',sch);addEventListener('orientationchange',sch);if(window.ResizeObserver)new ResizeObserver(sch).observe(el);
-  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fit);fit();setTimeout(fit,300);
+  function layout(){var narrow=innerWidth<560;root.classList.toggle('compact',narrow);root.style.width=narrow?'440px':'660px';fit();}
+  var raf;function sch(){cancelAnimationFrame(raf);raf=requestAnimationFrame(layout);}
+  addEventListener('resize',sch);addEventListener('orientationchange',sch);if(window.ResizeObserver)new ResizeObserver(function(){cancelAnimationFrame(raf);raf=requestAnimationFrame(fit);}).observe(el);
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(layout);
+  load();layout();setTimeout(layout,300);
+  if(api){setInterval(load,60000);document.addEventListener('visibilitychange',function(){if(!document.hidden)load();});}
 })();
 </script></body></html>
