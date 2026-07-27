@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARCANUM · Oráculo</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Silkscreen&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#191919;
+    --violet:#A855F7;
+    --magenta:#E838C8;
+    --cyan:#4CE0F5;
+    --ink:#EFE3FF;
+    --muted:#8E7BB0;
+    --line:rgba(168,85,247,.28);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+    font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body{display:flex;padding:clamp(6px,1.6vmin,16px)}
+
+  /* ---------- Tarjeta: ocupa todo el bloque ---------- */
+  .card{
+    position:relative;overflow:hidden;
+    flex:1;                       /* se estira al ancho y al alto */
+    display:flex;align-items:stretch;
+    gap:clamp(16px,3vw,40px);
+    padding:clamp(18px,3.4vmin,42px);
+    border:1px solid var(--line);border-radius:clamp(14px,2.2vmin,22px);
+    background:
+      radial-gradient(90% 120% at 15% 20%,rgba(168,85,247,.22),transparent 60%),
+      linear-gradient(160deg,#1E1033,#150C24 80%);
+  }
+  .card::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(232,56,200,.5),transparent);pointer-events:none}
+
+  /* ---------- Gema 3D ---------- */
+  .scene{flex:0 0 auto;align-self:center;
+    width:clamp(74px,min(17vw,24vh),160px);height:clamp(74px,min(17vw,24vh),160px);
+    perspective:520px}
+  .gem{width:100%;height:100%;position:relative;transform-style:preserve-3d;animation:spin 9s linear infinite}
+  .gem .f{position:absolute;left:50%;top:0;width:50%;height:50%;transform-origin:0 100%;background:linear-gradient(160deg,rgba(232,56,200,.92),rgba(168,85,247,.55));clip-path:polygon(0 0,100% 100%,-100% 100%);border:1px solid rgba(255,255,255,.25)}
+  .gem .t1{transform:translateX(-50%) rotateY(0) rotateX(30deg)}.gem .t2{transform:translateX(-50%) rotateY(90deg) rotateX(30deg)}.gem .t3{transform:translateX(-50%) rotateY(180deg) rotateX(30deg)}.gem .t4{transform:translateX(-50%) rotateY(270deg) rotateX(30deg)}
+  .gem .b1,.gem .b2,.gem .b3,.gem .b4{top:50%;background:linear-gradient(200deg,rgba(76,224,245,.6),rgba(168,85,247,.75))}
+  .gem .b1{transform:translateX(-50%) rotateY(0) rotateX(150deg)}.gem .b2{transform:translateX(-50%) rotateY(90deg) rotateX(150deg)}.gem .b3{transform:translateX(-50%) rotateY(180deg) rotateX(150deg)}.gem .b4{transform:translateX(-50%) rotateY(270deg) rotateX(150deg)}
+  .glow{position:absolute;inset:-30%;background:radial-gradient(circle,rgba(232,56,200,.4),transparent 62%);filter:blur(8px);animation:pulse 3s ease-in-out infinite;z-index:-1}
+  @keyframes spin{from{transform:rotateY(0)}to{transform:rotateY(360deg)}}
+  @keyframes pulse{0%,100%{opacity:.5}50%{opacity:.9}}
+
+  /* ---------- Cuerpo de texto (llena el alto) ---------- */
+  .body{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
+  .eyebrow{flex:0 0 auto;font-family:'Silkscreen',monospace;
+    font-size:clamp(8px,1.5vmin,11px);letter-spacing:.2em;color:var(--magenta);margin-bottom:clamp(8px,1.6vmin,14px)}
+
+  .slides{position:relative;flex:1;min-height:0;overflow:hidden}
+  .slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;
+    font-family:'Chakra Petch',sans-serif;font-weight:700;line-height:1.28;
+    overflow-wrap:break-word;word-break:break-word;
+    font-size:clamp(15px,3vmin,26px);        /* respaldo antes de que el JS ajuste */
+    opacity:0;transform:translateY(8px);transition:opacity .5s,transform .5s;pointer-events:none}
+  .slide.on{opacity:1;transform:none;pointer-events:auto}
+  .slide .author{display:block;margin-top:.5em;font-family:'Space Grotesk',sans-serif;
+    font-weight:500;font-size:.5em;color:var(--muted)}
+
+  /* ---------- Navegación ---------- */
+  .nav{flex:0 0 auto;display:flex;align-items:center;gap:10px;margin-top:clamp(12px,2.2vmin,20px)}
+  .dots{display:flex;gap:6px;flex:1;flex-wrap:wrap}
+  .dot{width:7px;height:7px;border-radius:50%;background:rgba(168,85,247,.3);cursor:pointer;transition:.25s}
+  .dot.on{background:var(--magenta);width:20px;border-radius:4px}
+  .arrow{width:clamp(28px,5vmin,34px);height:clamp(28px,5vmin,34px);border-radius:9px;display:grid;place-items:center;background:rgba(168,85,247,.12);border:1px solid var(--line);color:var(--ink);cursor:pointer;font-size:15px;-webkit-user-select:none;user-select:none;transition:.2s}
+  .arrow:hover{background:rgba(168,85,247,.26)}
+
+  /* ---------- Móvil: columna vertical ---------- */
+  @media (max-width:560px){
+    .card{flex-direction:column;gap:clamp(12px,3vh,26px);text-align:center}
+    .scene{width:clamp(72px,26vw,120px);height:clamp(72px,26vw,120px)}
+    .body{align-items:center}
+    .eyebrow{margin-bottom:clamp(6px,1.4vh,12px)}
+    .slide{align-items:center;text-align:center}
+    .dots{flex:0 0 auto;justify-content:center}
+    .nav{justify-content:center;width:100%}
+  }
+
+  @media (prefers-reduced-motion:reduce){.gem{animation-duration:24s}.glow{animation:none}}
+</style></head>
+<body>
+  <div class="card">
+    <div class="scene"><div class="gem"><div class="glow"></div><span class="f t1"></span><span class="f t2"></span><span class="f t3"></span><span class="f t4"></span><span class="f b1"></span><span class="f b2"></span><span class="f b3"></span><span class="f b4"></span></div></div>
+    <div class="body">
+      <div class="eyebrow" id="eyebrow">✦ EL ORÁCULO DICE</div>
+      <div class="slides" id="slides"></div>
+      <div class="nav"><div class="dots" id="dots"></div><div class="arrow" id="prev">‹</div><div class="arrow" id="next">›</div></div>
+    </div>
+  </div>
+<script>
+(function(){
+  var q=new URLSearchParams(location.search);
+  var dec=function(s){try{return decodeURIComponent(s);}catch(e){return s;}};
+
+  document.getElementById('eyebrow').textContent=dec(q.get('titulo')||'✦ EL ORÁCULO DICE').toUpperCase();
+
+  var DEFAULT=[
+    "El nivel no se compra, se gana una misión a la vez.|Códice de Arcanum",
+    "No esperes al héroe. El héroe eras tú desde el nivel 1.|Códice de Arcanum",
+    "Cada hábito es un hechizo que lanzas sobre tu yo futuro.|Códice de Arcanum",
+    "La constancia derrota a jefes que el talento ni siquiera ve.|Códice de Arcanum",
+    "Un día malo es solo un combate perdido, no la campaña.|Códice de Arcanum",
+    "El progreso lento sigue siendo progreso. Sigue caminando.|Códice de Arcanum",
+    "Tu disciplina de hoy es el equipo legendario de mañana.|Códice de Arcanum"
+  ];
+
+  var raw=q.get('frases');
+  var list=(raw?dec(raw).split('|'):DEFAULT).map(function(s){
+    var p=s.split(/\s—\s|\|/);
+    return {t:(p[0]||'').trim(),a:(p[1]||'').trim()};
+  }).filter(function(x){return x.t;});
+  if(!list.length)list=[{t:"Escribe tus frases con el parámetro frases.",a:""}];
+
+  var slides=document.getElementById('slides'),dots=document.getElementById('dots');
+  slides.innerHTML=list.map(function(o,i){
+    return '<div class="slide'+(i===0?' on':'')+'">'+o.t.replace(/[<>]/g,'')+(o.a?'<span class="author">— '+o.a.replace(/[<>]/g,'')+'</span>':'')+'</div>';
+  }).join('');
+  dots.innerHTML=list.map(function(_,i){return '<span class="dot'+(i===0?' on':'')+'" data-i="'+i+'"></span>';}).join('');
+
+  var els=slides.querySelectorAll('.slide'),dl=dots.querySelectorAll('.dot'),cur=0,timer;
+  function go(i){
+    cur=(i+list.length)%list.length;
+    els.forEach(function(e,x){e.classList.toggle('on',x===cur);});
+    dl.forEach(function(e,x){e.classList.toggle('on',x===cur);});
+  }
+  function auto(){clearInterval(timer);timer=setInterval(function(){go(cur+1);},7000);}
+  document.getElementById('next').onclick=function(){go(cur+1);auto();};
+  document.getElementById('prev').onclick=function(){go(cur-1);auto();};
+  dots.addEventListener('click',function(e){if(e.target.dataset.i){go(+e.target.dataset.i);auto();}});
+  auto();
+
+  /* ---------- Auto-ajuste del texto al ancho y alto disponibles ----------
+     Busca el mayor tamaño de fuente con el que TODAS las frases caben en su
+     caja (sin desbordar). Todas quedan al mismo tamaño para que no salte al
+     rotar. Se recalcula al cambiar el tamaño del bloque. */
+  function fitQuotes(){
+    var bw=slides.clientWidth, bh=slides.clientHeight;
+    if(!bw||!bh) return;
+    var best=Infinity;
+    els.forEach(function(sl){
+      var lo=10, hi=Math.min(220, bh), ok=10;
+      for(var i=0;i<13;i++){
+        var mid=(lo+hi)/2;
+        sl.style.fontSize=mid+'px';
+        if(sl.scrollHeight<=bh && sl.scrollWidth<=bw){ ok=mid; lo=mid; } else { hi=mid; }
+      }
+      if(ok<best) best=ok;
+    });
+    els.forEach(function(sl){sl.style.fontSize=best.toFixed(1)+'px';});
+  }
+
+  var raf;function sch(){cancelAnimationFrame(raf);raf=requestAnimationFrame(fitQuotes);}
+  addEventListener('resize',sch);addEventListener('orientationchange',sch);
+  if(window.ResizeObserver)new ResizeObserver(sch).observe(slides);
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitQuotes);
+  fitQuotes();setTimeout(fitQuotes,300);
+})();
+</script></body></html>
