@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARCANUM · HUD</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Silkscreen&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#191919;--void:#0A0611;--panel-2:#1E1033;--violet:#A855F7;--magenta:#E838C8;--cyan:#4CE0F5;--ink:#EFE3FF;--muted:#8E7BB0;--line:rgba(168,85,247,.28)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Space Grotesk',system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+  body{display:flex;padding:clamp(6px,1.6vmin,16px)}
+
+  /* ---------- Tarjeta: ocupa todo el bloque ---------- */
+  .card{position:relative;overflow:hidden;flex:1;
+    display:flex;flex-direction:column;justify-content:center;
+    background:radial-gradient(120% 90% at 8% 0%,rgba(232,56,200,.20),transparent 55%),radial-gradient(120% 120% at 100% 100%,rgba(76,224,245,.12),transparent 50%),linear-gradient(160deg,var(--panel-2),var(--void) 70%);
+    border:1px solid var(--line);border-radius:clamp(14px,2.2vmin,22px);
+    padding:clamp(18px,3.2vmin,28px)}
+  .card::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:44px 44px;-webkit-mask-image:radial-gradient(80% 60% at 50% 0%,#000,transparent 75%);mask-image:radial-gradient(80% 60% at 50% 0%,#000,transparent 75%)}
+  .card>*{position:relative}
+
+  /* ---------- Cabecera ---------- */
+  .top{display:flex;align-items:center;gap:clamp(12px,2vmin,18px)}
+  .sigil{width:clamp(50px,8.6vmin,72px);height:clamp(50px,8.6vmin,72px);flex:0 0 auto;display:grid;place-items:center;background:linear-gradient(150deg,rgba(168,85,247,.35),rgba(232,56,200,.12));border:1px solid var(--line);clip-path:polygon(50% 0,100% 26%,100% 74%,50% 100%,0 74%,0 26%);font-size:clamp(22px,3.8vmin,30px);line-height:1;filter:drop-shadow(0 0 14px rgba(168,85,247,.45))}
+  .who{min-width:0;flex:1}
+  .eyebrow{font-family:'Silkscreen',monospace;font-size:clamp(8px,1.4vmin,10px);letter-spacing:.22em;color:var(--magenta);text-transform:uppercase}
+  .name{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:clamp(20px,3.4vmin,28px);line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .title{font-size:clamp(11px,1.7vmin,13px);color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lvl{text-align:right;flex:0 0 auto}
+  .lvl .n{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:clamp(34px,6.4vmin,50px);line-height:.9;background:linear-gradient(180deg,#fff,var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(168,85,247,.5))}
+  .lvl .k{font-family:'Silkscreen',monospace;font-size:clamp(8px,1.4vmin,10px);letter-spacing:.2em;color:var(--muted)}
+
+  /* ---------- Barra de experiencia ---------- */
+  .meter{margin-top:clamp(14px,2.6vmin,20px)}
+  .meter-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:7px}
+  .meter-head b{font-family:'Silkscreen',monospace;font-size:clamp(8px,1.4vmin,10px);letter-spacing:.2em;color:var(--muted);font-weight:400}
+  .meter-head span{font-family:'Chakra Petch',sans-serif;font-size:clamp(11px,1.9vmin,14px)}
+  .shard{height:clamp(15px,2.4vmin,20px);background:rgba(255,255,255,.05);border:1px solid var(--line);clip-path:polygon(9px 0,100% 0,calc(100% - 9px) 100%,0 100%);position:relative;overflow:hidden}
+  .fill{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,var(--violet),var(--magenta) 70%,var(--cyan));transition:width 1.1s cubic-bezier(.2,.8,.2,1)}
+  .fill::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(10,6,17,.55) 0 2px,transparent 2px 11px)}
+  .ticks{position:absolute;inset:0;display:flex;pointer-events:none}.ticks i{flex:1;border-right:1px solid rgba(10,6,17,.55)}.ticks i:last-child{border:0}
+
+  /* ---------- Estadísticas ---------- */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:clamp(14px,2.6vmin,20px);background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .stat{background:rgba(10,6,17,.72);padding:clamp(9px,1.8vmin,13px) clamp(8px,1.6vmin,12px)}
+  .stat b{display:block;font-family:'Chakra Petch',sans-serif;font-size:clamp(16px,2.6vmin,22px);font-weight:700}
+  .stat small{font-family:'Silkscreen',monospace;font-size:clamp(7px,1.2vmin,8px);letter-spacing:.14em;color:var(--muted)}
+  .stat:nth-child(2) b{color:var(--magenta)}.stat:nth-child(3) b{color:var(--cyan)}
+  .err{font-size:clamp(11px,1.7vmin,13px);color:var(--magenta);margin-top:10px;display:none;text-align:center}
+
+  /* ===== MÓVIL / retrato: vertical, centrado y GRANDE ===== */
+  @media (max-width:560px){
+    .card{padding:clamp(22px,6vw,32px)}
+    .top{flex-direction:column;text-align:center;gap:clamp(12px,3.5vw,16px)}
+    .sigil{width:clamp(76px,min(23vw,15vh),116px);height:clamp(76px,min(23vw,15vh),116px);font-size:clamp(34px,min(10vw,7vh),46px)}
+    .who{width:100%;flex:0 0 auto}
+    .name{white-space:normal;font-size:clamp(24px,min(7.4vw,4.6vh),36px);line-height:1.14}
+    .title{white-space:normal;font-size:clamp(12px,3.2vw,15px);margin-top:4px}
+    .lvl{text-align:center}
+    .lvl .n{font-size:clamp(46px,min(15vw,10vh),70px)}
+    .lvl .k{font-size:clamp(9px,2.6vw,11px)}
+    .meter{margin-top:clamp(20px,5.5vw,26px)}
+    .meter-head span{font-size:clamp(13px,3.6vw,16px)}
+    .shard{height:clamp(20px,5.2vw,26px)}
+    .stats{margin-top:clamp(20px,5.5vw,26px)}
+    .stat{padding:clamp(14px,4vw,18px) 12px;text-align:center}
+    .stat b{font-size:clamp(22px,min(6.8vw,5vh),32px)}
+    .stat small{font-size:clamp(8px,2.2vw,10px)}
+  }
+
+  @media (prefers-reduced-motion:reduce){.fill{transition:none}}
+</style></head>
+<body>
+  <div class="card">
+    <div class="top">
+      <div class="sigil" id="sigil">🔮</div>
+      <div class="who"><div class="eyebrow" id="clase">ARCANISTA</div><div class="name" id="nombre">Cargando…</div><div class="title" id="titulo">—</div></div>
+      <div class="lvl"><div class="n" id="nivel">1</div><div class="k">NIVEL</div></div>
+    </div>
+    <div class="meter"><div class="meter-head"><b>EXPERIENCIA</b><span id="xptxt">0 / 100 XP</span></div>
+      <div class="shard"><div class="fill" id="fill"></div><div class="ticks"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div>
+    <div class="stats"><div class="stat"><b id="s1">0</b><small>MISIONES</small></div><div class="stat"><b id="s2">0</b><small>RACHA</small></div><div class="stat"><b id="s3">0</b><small>HABILIDADES</small></div></div>
+    <div class="err" id="err"></div>
+  </div>
+<script>
+(function(){
+  var q=new URLSearchParams(location.search),api=q.get('api');
+  function paint(d){
+    document.getElementById('sigil').textContent=d.icono||'🔮';
+    document.getElementById('clase').textContent=(d.clase||'ARCANISTA').toUpperCase();
+    document.getElementById('nombre').textContent=d.nombre||'Sin nombre';
+    document.getElementById('titulo').textContent=d.titulo||'—';
+    document.getElementById('nivel').textContent=d.nivel;
+    var xp=+d.xp||0,max=Math.max(+d.xpmax||100,1),pct=Math.max(0,Math.min(100,xp/max*100));
+    document.getElementById('xptxt').textContent=Math.round(xp)+' / '+Math.round(max)+' XP';
+    requestAnimationFrame(function(){document.getElementById('fill').style.width=pct+'%';});
+    document.getElementById('s1').textContent=d.misiones;
+    document.getElementById('s2').textContent=d.racha;
+    document.getElementById('s3').textContent=d.habilidades;
+  }
+  function fromParams(){var g=function(k,dv){var v=q.get(k);return(v===null||v==='')?dv:v;};return {icono:g('icono','🔮'),clase:g('clase','ARCANISTA'),nombre:g('nombre','Sin nombre'),titulo:g('titulo','—'),nivel:g('nivel','1'),xp:g('xp','0'),xpmax:g('xpmax','100'),misiones:g('misiones','0'),racha:g('racha','0'),habilidades:g('habilidades','0')};}
+  function err(m){var e=document.getElementById('err');e.style.display='block';e.textContent=m;}
+  function hint(){document.querySelector('.card').innerHTML='<div style="text-align:center;padding:clamp(24px,6vw,40px) clamp(18px,5vw,28px);color:#8E7BB0;font-size:clamp(12px,3vw,14px);line-height:1.7"><div style="font-family:Silkscreen,monospace;font-size:clamp(9px,2.4vw,11px);letter-spacing:.2em;color:#E838C8;margin-bottom:10px">HUD SIN CONECTAR</div>Abre tu base <b style="color:#EFE3FF">PERSONAJE</b>, copia el texto de la propiedad <b style="color:#EFE3FF">URL HUD</b> y pega <b style="color:#EFE3FF">esa</b> URL aquí.<br>No pegues el enlace corto del widget.</div>';}
+  function load(){if(!api&&!q.has('nombre')&&!q.has('nivel')&&!q.has('xp')){hint();return;}if(!api){paint(fromParams());return;}fetch(api,{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){if(j.error)throw 0;paint(j.personaje);}).catch(function(){paint(fromParams());err('Sin conexión con el motor. Revisa tu Worker.');});}
+
+  load();
+  if(api){setInterval(load,60000);document.addEventListener('visibilitychange',function(){if(!document.hidden)load();});}
+})();
+</script></body></html>
