@@ -9,33 +9,37 @@
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;width:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:'Chakra Petch',system-ui,sans-serif}
   
-  /* Contenedores flexibles sin tamaño duro */
-  #stage{position:fixed;inset:0;display:flex;align-items:stretch;justify-content:center;padding:clamp(12px, 3vmin, 32px)}
+  /* Contenedor maestro: se expande a las 4 esquinas */
+  #stage{position:fixed;inset:0;display:flex;align-items:stretch;justify-content:center;padding:clamp(16px, 3vmin, 32px)}
   #root{flex:1;display:flex;align-items:stretch;justify-content:center;max-width:900px;margin:auto;}
   
-  /* La tarjeta ocupa todo el espacio de #root */
-  .card{flex:1;display:flex;flex-direction:column;background:radial-gradient(90% 70% at 50% 0%,rgba(168,85,247,.18),transparent 60%),linear-gradient(160deg,var(--panel-2),var(--void) 70%);border:1px solid var(--line);border-radius:clamp(16px, 2.5vmin, 24px);padding:clamp(16px, 3vmin, 32px)}
+  /* La tarjeta ocupa el 100% del alto y ancho disponible */
+  .card{
+    flex:1;display:flex;flex-direction:column;
+    background:radial-gradient(90% 70% at 50% 0%,rgba(168,85,247,.18),transparent 60%),linear-gradient(160deg,var(--panel-2),var(--void) 70%);
+    border:1px solid var(--line);border-radius:clamp(16px, 2.5vmin, 24px);
+    padding:clamp(16px, 3vmin, 24px) clamp(16px, 3vmin, 24px) 10px;
+  }
   
-  /* Encabezado fluido */
+  /* Cabecera que no colapsa */
   .head{display:flex;justify-content:space-between;align-items:center;padding:0 6px clamp(10px, 3vmin, 20px);flex:0 0 auto}
-  .head h1{font-family:'Silkscreen',monospace;font-size:clamp(10px, 2vmin, 16px);letter-spacing:.2em;color:var(--magenta);font-weight:400}
-  .head em{font-style:normal;font-size:clamp(11px, 2vmin, 16px);color:var(--muted);font-family:'Silkscreen',monospace;letter-spacing:.12em}
+  .head h1{font-family:'Silkscreen',monospace;font-size:clamp(10px, 2.5vmin, 16px);letter-spacing:.2em;color:var(--magenta);font-weight:400}
+  .head em{font-style:normal;font-size:clamp(11px, 2.5vmin, 16px);color:var(--muted);font-family:'Silkscreen',monospace;letter-spacing:.12em}
   
-  /* Contenedor del radar */
-  #wrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
+  /* Envoltura del SVG: actúa como lienzo vacío para tomar medidas exactas */
+  #wrap{flex:1;position:relative;min-height:0;min-width:0;}
   
-  /* El SVG hereda automáticamente la magia responsiva gracias a su viewBox interno */
-  svg{width:100%;height:100%;max-height:100%;display:block;overflow:visible}
-  .grid{fill:none;stroke:var(--line);stroke-width:1}.spoke{stroke:rgba(168,85,247,.2);stroke-width:1}
-  .area{fill:url(#g1);stroke:var(--magenta);stroke-width:2;filter:drop-shadow(0 0 10px rgba(232,56,200,.55));transform-origin:center;animation:pop .9s cubic-bezier(.2,.9,.25,1) both}
-  .dot{fill:#fff;stroke:var(--magenta);stroke-width:2}
+  /* SVG dibujado dinámicamente */
+  svg{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:visible}
+  .grid{fill:none;stroke:var(--line);stroke-width:1.5}
+  .spoke{stroke:rgba(168,85,247,.25);stroke-width:1.5}
+  .area{fill:url(#g1);stroke:var(--magenta);stroke-width:2.5;filter:drop-shadow(0 0 12px rgba(232,56,200,.6));transform-origin:center;animation:pop .9s cubic-bezier(.2,.9,.25,1) both}
+  .dot{fill:#fff;stroke:var(--magenta);stroke-width:2.5}
   
-  /* Los textos dentro del SVG se escalan en base al viewBox, así que usamos un tamaño fijo aquí */
-  .lab{font-family:'Chakra Petch',sans-serif;font-size:12px;font-weight:700;fill:var(--ink)}
-  .val{font-family:'Silkscreen',monospace;font-size:9px;fill:var(--cyan);letter-spacing:.08em}
+  .lab{font-family:'Chakra Petch',sans-serif;font-weight:700;fill:var(--ink)}
+  .val{font-family:'Silkscreen',monospace;fill:var(--cyan);letter-spacing:.08em}
   
-  /* Textos de error/carga fluidos */
-  .empty{padding:34px 10px;text-align:center;color:var(--muted);font-size:clamp(13px, 2.5vmin, 18px);line-height:1.6}
+  .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:clamp(13px, 2.5vmin, 18px);line-height:1.6;padding:20px;}
   
   @keyframes pop{from{transform:scale(.2);opacity:0}to{transform:scale(1);opacity:1}}
   @media (prefers-reduced-motion:reduce){.area{animation:none}}
@@ -52,39 +56,86 @@
   
   document.getElementById('titulo').textContent=dec(q.get('titulo')||'MAPA DE HABILIDADES').toUpperCase();
   
-  function draw(labels,vals){
-    var wrap=document.getElementById('wrap');
-    if(labels.length<3||vals.length<3){wrap.innerHTML='<div class="empty">Se necesitan al menos 3 habilidades vinculadas al personaje.</div>';return;}
+  // Variables globales para recordar la data y redibujar al rotar el móvil
+  var cLabels = [], cVals = [];
+  
+  // El motor matemático que calcula SVG basado en el espacio disponible en pantalla
+  function renderRadar() {
+    var wrap = document.getElementById('wrap');
+    var W = wrap.clientWidth;
+    var H = wrap.clientHeight;
     
-    var n=Math.min(labels.length,vals.length);labels=labels.slice(0,n);vals=vals.slice(0,n).map(function(v){return isNaN(v)?0:v;});
-    var max=parseFloat(q.get('max'));if(isNaN(max)||max<=0){max=Math.max.apply(null,vals);max=Math.ceil(Math.max(max,1)/5)*5;}
+    // Si la pantalla es nula (invisible), no dibuja
+    if (W === 0 || H === 0) return;
     
+    var labels = cLabels, vals = cVals;
+    if(labels.length < 3 || vals.length < 3){
+      wrap.innerHTML='<div class="empty">Se necesitan al menos 3 habilidades...</div>';
+      return;
+    }
+    
+    var n=Math.min(labels.length,vals.length);
+    labels=labels.slice(0,n);
+    vals=vals.slice(0,n).map(function(v){return isNaN(v)?0:v;});
+    
+    var max=parseFloat(q.get('max'));
+    if(isNaN(max)||max<=0){
+      max=Math.max.apply(null,vals);
+      max=Math.ceil(Math.max(max,1)/5)*5;
+    }
     document.getElementById('meta').textContent='MAX '+max;
     
-    var W=420,H=360,cx=W/2,cy=H/2+4,R=Math.min(W,H)/2-64,rings=4;
-    var pt=function(i,r){var a=(Math.PI*2*i/n)-Math.PI/2;return[cx+Math.cos(a)*r,cy+Math.sin(a)*r];};
-    var poly=function(r){var p=[];for(var i=0;i<n;i++){p.push(pt(i,r).join(','));}return p.join(' ');};
+    var cx=W/2, cy=H/2;
+    // Calcula el radio ideal basándose en la dimensión más corta, respetando espacio para textos
+    var padding = Math.max(70, Math.min(W, H) * 0.18);
+    var R = Math.min(W, H)/2 - padding;
+    if(R < 20) R = 20; 
     
-    var s='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">';
+    var rings=4;
+    var pt=function(i,r){
+      var a=(Math.PI*2*i/n)-Math.PI/2;
+      return [cx+Math.cos(a)*r, cy+Math.sin(a)*r];
+    };
+    var poly=function(r){
+      var p=[];for(var i=0;i<n;i++){p.push(pt(i,r).join(','));}
+      return p.join(' ');
+    };
+    
+    var s='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">';
     s+='<defs><radialGradient id="g1"><stop offset="0%" stop-color="#A855F7" stop-opacity=".65"/><stop offset="100%" stop-color="#E838C8" stop-opacity=".22"/></radialGradient></defs>';
+    
     for(var k=rings;k>=1;k--){s+='<polygon class="grid" points="'+poly(R*k/rings)+'"/>';}
     for(var i=0;i<n;i++){var e=pt(i,R);s+='<line class="spoke" x1="'+cx+'" y1="'+cy+'" x2="'+e[0]+'" y2="'+e[1]+'"/>';}
+    
     var pts=[];for(var i=0;i<n;i++){var r=R*Math.max(0,Math.min(1,vals[i]/max));pts.push(pt(i,r));}
     s+='<polygon class="area" points="'+pts.map(function(p){return p.join(',');}).join(' ')+'"/>';
-    pts.forEach(function(p){s+='<circle class="dot" cx="'+p[0]+'" cy="'+p[1]+'" r="3.5"/>';});
+    
+    var dotR = Math.max(3, R*0.03);
+    pts.forEach(function(p){s+='<circle class="dot" cx="'+p[0]+'" cy="'+p[1]+'" r="'+dotR+'"/>';});
+    
+    // Tamaños de fuente inteligentes que crecen o encogen con el gráfico
+    var labSize = Math.max(10, Math.min(W, H) * 0.035);
+    var valSize = Math.max(8, Math.min(W, H) * 0.025);
+    var labelOffset = Math.max(18, R * 0.15);
     
     for(var i=0;i<n;i++){
-      var p=pt(i,R+24),anchor='middle';
-      if(p[0]>cx+8)anchor='start';else if(p[0]<cx-8)anchor='end';
-      s+='<text class="lab" x="'+p[0]+'" y="'+p[1]+'" text-anchor="'+anchor+'">'+labels[i].replace(/[<>&]/g,'')+'</text>';
-      s+='<text class="val" x="'+p[0]+'" y="'+(p[1]+14)+'" text-anchor="'+anchor+'">NV '+vals[i]+'</text>';
+      var p=pt(i,R+labelOffset), anchor='middle';
+      if(p[0]>cx+10) anchor='start'; else if(p[0]<cx-10) anchor='end';
+      s+='<text class="lab" x="'+p[0]+'" y="'+p[1]+'" text-anchor="'+anchor+'" font-size="'+labSize+'px">'+labels[i].replace(/[<>&]/g,'')+'</text>';
+      s+='<text class="val" x="'+p[0]+'" y="'+(p[1]+labSize*1.2)+'" text-anchor="'+anchor+'" font-size="'+valSize+'px">NV '+vals[i]+'</text>';
     }
     s+='</svg>';
     wrap.innerHTML=s;
   }
   
+  function draw(labels, vals) {
+    cLabels = labels;
+    cVals = vals;
+    renderRadar();
+  }
+  
   function hint(){
-    document.getElementById('wrap').innerHTML='<div class="empty"><span style="font-family:Silkscreen,monospace;font-size:clamp(10px,2vmin,14px);letter-spacing:.2em;color:#E838C8">RADAR SIN CONECTAR</span><br><br>Copia el texto de la propiedad <b style="color:#EFE3FF">URL Radar</b> de tu base <b style="color:#EFE3FF">PERSONAJE</b> y pega esa URL aquí.</div>';
+    document.getElementById('wrap').innerHTML='<div class="empty"><div><span style="font-family:Silkscreen,monospace;font-size:clamp(10px,2.5vmin,14px);letter-spacing:.2em;color:#E838C8">RADAR SIN CONECTAR</span><br><br>Copia el texto de la propiedad <b style="color:#EFE3FF">URL Radar</b> de tu base <b style="color:#EFE3FF">PERSONAJE</b> y pega esa URL aquí.</div></div>';
   }
   
   function load(){
@@ -104,5 +155,20 @@
     setInterval(load,60000);
     document.addEventListener('visibilitychange',function(){if(!document.hidden)load();});
   }
+  
+  // Escucha activa de cambios de tamaño en el dispositivo (rotación, tablets, multi-ventanas)
+  var roTimer;
+  if (window.ResizeObserver) {
+    new ResizeObserver(function() {
+      cancelAnimationFrame(roTimer);
+      roTimer = requestAnimationFrame(renderRadar);
+    }).observe(document.getElementById('wrap'));
+  } else {
+    window.addEventListener('resize', function() {
+      cancelAnimationFrame(roTimer);
+      roTimer = requestAnimationFrame(renderRadar);
+    });
+  }
+  
 })();
 </script></body></html>
