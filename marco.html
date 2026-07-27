@@ -9,7 +9,7 @@
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:'Space Grotesk',system-ui,sans-serif}
   body{padding:4px}
-  .frame{position:relative;height:100%;display:flex;flex-direction:column;border-radius:18px;padding:14px;background:linear-gradient(160deg,#231442,#140B24);border:1px solid var(--line);box-shadow:0 0 0 1px rgba(232,56,200,.12),0 18px 50px rgba(168,85,247,.18)}
+  .frame{position:relative;height:100%;display:flex;flex-direction:column;border-radius:18px;padding:14px;background:linear-gradient(160deg,#231442,#140B24);border:1px solid var(--line);}
   .corner{position:absolute;width:22px;height:22px;border:2px solid var(--magenta);opacity:.85;filter:drop-shadow(0 0 5px var(--magenta))}
   .c1{top:8px;left:8px;border-right:0;border-bottom:0;border-radius:8px 0 0 0}.c2{top:8px;right:8px;border-left:0;border-bottom:0;border-radius:0 8px 0 0}.c3{bottom:8px;left:8px;border-right:0;border-top:0;border-radius:0 0 0 8px}.c4{bottom:8px;right:8px;border-left:0;border-top:0;border-radius:0 0 8px 0}
   .inner{position:relative;flex:1 1 auto;min-height:60px;border-radius:13px;overflow:hidden;border:1px solid rgba(168,85,247,.35);background:#0E0819;display:flex;align-items:center;justify-content:center}
@@ -30,14 +30,14 @@
 <body><div class="frame">
   <span class="corner c1"></span><span class="corner c2"></span><span class="corner c3"></span><span class="corner c4"></span>
   <div class="inner" id="inner"><div class="drop" id="drop"><div class="ic">🖼️</div><b>Arrastra una imagen aquí</b><small>o haz clic para elegirla · se guarda en este dispositivo</small></div><span class="sheen"></span></div>
-  <div class="cap"><span class="name" id="name">Comienza tu aventura!</span><span class="tag" id="tag">ARCANUM</span></div>
+  <div class="cap"><span class="name" id="name">Retrato del héroe</span><span class="tag" id="tag">ARCANUM</span></div>
   <input type="file" id="file" accept="image/*" hidden>
 </div>
 <script>
 (function(){
   var q=new URLSearchParams(location.search);var dec=function(s){try{return decodeURIComponent(s);}catch(e){return s;}};
   var KEY='arcanum_img_'+(q.get('id')||'main');
-  document.getElementById('name').textContent=dec(q.get('titulo')||'Comienza tu aventura!');
+  document.getElementById('name').textContent=dec(q.get('titulo')||'Retrato del héroe');
   document.getElementById('tag').textContent=(dec(q.get('tag')||'ARCANUM')).toUpperCase();
   var inner=document.getElementById('inner'),drop=document.getElementById('drop'),file=document.getElementById('file');
   function show(src){var old=inner.querySelector('img');if(old)old.remove();if(drop)drop.style.display='none';var img=new Image();img.src=src;img.alt='';inner.insertBefore(img,inner.querySelector('.sheen'));if(!inner.querySelector('.change')){var b=document.createElement('div');b.className='change';b.textContent='Cambiar';b.onclick=function(e){e.stopPropagation();file.click();};inner.appendChild(b);}}
