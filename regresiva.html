@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARCANUM · Cuenta regresiva</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Orbitron:wght@700;800;900&family=Silkscreen&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#191919;--void:#0A0611;--panel-2:#1E1033;--violet:#A855F7;--magenta:#E838C8;--cyan:#4CE0F5;--ink:#EFE3FF;--muted:#8E7BB0;--line:rgba(168,85,247,.28)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .app{position:fixed;inset:0;overflow:hidden;display:flex;flex-direction:column;justify-content:center;
+    background:radial-gradient(100% 80% at 50% 0%,rgba(232,56,200,.18),transparent 60%),linear-gradient(160deg,var(--panel-2),var(--void) 74%);
+    border:1px solid var(--line);border-radius:clamp(0px,2vmin,20px);padding:clamp(18px,4.5vw,34px);gap:clamp(14px,3.4vw,22px)}
+
+  /* Botón de ajustes */
+  .gear{position:absolute;top:clamp(10px,2.4vw,16px);right:clamp(10px,2.4vw,16px);z-index:5;
+    width:clamp(30px,7vw,38px);height:clamp(30px,7vw,38px);border-radius:10px;display:grid;place-items:center;
+    background:rgba(168,85,247,.12);border:1px solid var(--line);color:var(--ink);cursor:pointer;font-size:clamp(14px,3.6vw,18px);transition:.16s;-webkit-user-select:none;user-select:none}
+  .gear:hover{background:rgba(168,85,247,.26)}
+
+  .head{flex:0 0 auto;text-align:center;padding:0 clamp(36px,10vw,48px)}
+  .eyebrow{font-family:'Silkscreen',monospace;font-size:clamp(8px,2vw,11px);letter-spacing:.22em;color:var(--magenta);text-transform:uppercase}
+  .head h1{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:clamp(19px,5vw,32px);line-height:1.14;margin-top:6px}
+  .head .desc{font-size:clamp(11px,2.8vw,14px);color:var(--muted);margin-top:5px}
+
+  .grid{flex:0 0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(7px,2vw,14px)}
+  .u{background:rgba(10,6,17,.5);border:1px solid var(--line);border-radius:14px;padding:clamp(12px,3vw,20px) clamp(4px,1.5vw,8px);text-align:center}
+  .u b{display:block;font-family:'Orbitron',sans-serif;font-weight:800;font-size:clamp(24px,7.6vw,58px);line-height:1;color:var(--ink);font-variant-numeric:tabular-nums;text-shadow:0 0 18px rgba(183,148,246,.35)}
+  .u small{display:block;font-family:'Silkscreen',monospace;font-size:clamp(6.5px,1.7vw,9px);letter-spacing:.14em;color:var(--muted);margin-top:clamp(6px,1.6vw,10px)}
+  .u:nth-child(1) b{color:var(--violet)}.u:nth-child(2) b{color:#fff}.u:nth-child(3) b{color:var(--cyan)}.u:nth-child(4) b{color:var(--magenta)}
+
+  .foot{flex:0 0 auto}
+  .bar-head{display:flex;justify-content:space-between;font-family:'Silkscreen',monospace;font-size:clamp(7px,1.8vw,9px);letter-spacing:.14em;color:var(--muted);margin-bottom:6px}
+  .track{height:clamp(8px,2vw,12px);border-radius:99px;background:rgba(10,6,17,.6);border:1px solid var(--line);overflow:hidden}
+  .track i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--violet),var(--magenta) 70%,var(--cyan));transition:width .6s cubic-bezier(.2,.8,.2,1)}
+  .victory{display:none;text-align:center;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:clamp(20px,6vw,38px);background:linear-gradient(100deg,var(--violet),var(--magenta) 55%,var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent;padding:clamp(20px,6vw,40px) 0}
+
+  @media (max-width:440px){.grid{grid-template-columns:repeat(2,1fr)}}
+
+  /* Panel de ajustes */
+  .settings{position:absolute;inset:0;z-index:10;display:none;flex-direction:column;justify-content:center;gap:clamp(10px,2.6vw,14px);
+    padding:clamp(20px,5vw,40px);background:linear-gradient(160deg,#241540,#100a1c 80%);overflow:auto}
+  .settings.on{display:flex}
+  .settings h2{font-family:'Silkscreen',monospace;font-size:clamp(10px,2.4vw,12px);letter-spacing:.2em;color:var(--magenta);text-align:center;margin-bottom:4px}
+  .field label{display:block;font-family:'Silkscreen',monospace;font-size:clamp(7px,1.8vw,9px);letter-spacing:.14em;color:var(--muted);margin-bottom:5px}
+  .field input{width:100%;font-family:'Space Grotesk',sans-serif;font-size:clamp(13px,3.2vw,15px);color:var(--ink);background:rgba(10,6,17,.6);border:1px solid var(--line);border-radius:10px;padding:clamp(10px,2.6vw,12px);outline:none}
+  .field input:focus{border-color:var(--violet)}
+  .field input::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(1) saturate(4) hue-rotate(240deg)}
+  .srow{display:flex;gap:10px;margin-top:clamp(4px,1.4vw,8px)}
+  .sbtn{flex:1;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:clamp(13px,3.2vw,15px);border-radius:10px;padding:clamp(11px,2.8vw,13px);cursor:pointer;border:1px solid var(--line);transition:.16s;-webkit-user-select:none;user-select:none;text-align:center}
+  .sbtn.save{background:linear-gradient(120deg,var(--violet),var(--magenta));border-color:transparent;color:#fff}
+  .sbtn.cancel{background:rgba(168,85,247,.1);color:var(--muted)}
+  .sbtn:hover{filter:brightness(1.1)}
+</style></head>
+<body>
+  <div class="app" id="app">
+    <div class="gear" id="gear" title="Configurar">⚙</div>
+    <div class="head">
+      <div class="eyebrow" id="eyebrow">⚔️ Jefe final</div>
+      <h1 id="titulo">Cuenta regresiva</h1>
+      <div class="desc" id="desc"></div>
+    </div>
+    <div class="grid" id="grid">
+      <div class="u"><b id="d">0</b><small>DÍAS</small></div>
+      <div class="u"><b id="h">0</b><small>HORAS</small></div>
+      <div class="u"><b id="m">0</b><small>MINUTOS</small></div>
+      <div class="u"><b id="s">0</b><small>SEGUNDOS</small></div>
+    </div>
+    <div class="foot" id="foot">
+      <div class="bar-head"><span>PROGRESO</span><span id="pct">0%</span></div>
+      <div class="track"><i id="bar"></i></div>
+    </div>
+    <div class="victory" id="victory">✦ ¡MISIÓN CUMPLIDA! ✦</div>
+
+    <div class="settings" id="settings">
+      <h2>⚙ Configurar cuenta regresiva</h2>
+      <div class="field"><label>TÍTULO</label><input id="f-titulo" type="text" placeholder="Examen FCA Global English"></div>
+      <div class="field"><label>FECHA Y HORA OBJETIVO</label><input id="f-fecha" type="datetime-local"></div>
+      <div class="field"><label>DESCRIPCIÓN (OPCIONAL)</label><input id="f-desc" type="text" placeholder="Examen de inglés"></div>
+      <div class="srow"><div class="sbtn cancel" id="f-cancel">Cancelar</div><div class="sbtn save" id="f-save">Guardar</div></div>
+    </div>
+  </div>
+<script>
+(function(){
+  var q=new URLSearchParams(location.search);
+  var dec=function(s){try{return decodeURIComponent(s);}catch(e){return s;}};
+  var pad=function(n){return(n<10?'0':'')+n;};
+  var $=function(id){return document.getElementById(id);};
+  var KEY='arcanum_countdown_'+(q.get('id')||'default');
+
+  // Estado inicial: lo guardado por el usuario tiene prioridad; si no, los parámetros de la URL.
+  var saved={};try{saved=JSON.parse(localStorage.getItem(KEY)||'{}');}catch(e){}
+  var cfg={
+    eyebrow:dec(q.get('eyebrow')||'⚔️ Jefe final'),
+    titulo:saved.titulo||dec(q.get('titulo')||'Cuenta regresiva'),
+    desc:(saved.desc!==undefined?saved.desc:dec(q.get('desc')||'')),
+    fecha:saved.fecha||dec(q.get('fecha')||'2026-08-11T09:00'),
+    desde:saved.desde||dec(q.get('desde')||'')
+  };
+
+  var target,start,timer;
+  function localStr(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes());}
+
+  function apply(){
+    $('eyebrow').textContent=cfg.eyebrow;
+    $('titulo').textContent=cfg.titulo;
+    $('desc').textContent=cfg.desc;$('desc').style.display=cfg.desc?'':'none';
+    target=new Date(cfg.fecha);
+    start=cfg.desde?new Date(cfg.desde):new Date();
+    if(isNaN(start.getTime()))start=new Date();
+    clearInterval(timer);
+    if(isNaN(target.getTime())){$('gear').style.display='grid';openSettings();return;}
+    tick();timer=setInterval(tick,1000);
+  }
+  function tick(){
+    var now=new Date(),diff=target-now;
+    if(diff<=0){$('grid').style.display='none';$('foot').style.display='none';$('victory').style.display='block';clearInterval(timer);return;}
+    $('grid').style.display='';$('foot').style.display='';$('victory').style.display='none';
+    var sec=Math.floor(diff/1000);
+    $('d').textContent=Math.floor(sec/86400);
+    $('h').textContent=pad(Math.floor(sec%86400/3600));
+    $('m').textContent=pad(Math.floor(sec%3600/60));
+    $('s').textContent=pad(sec%60);
+    var span=target-start,el=now-start,pct=span>0?Math.max(0,Math.min(100,el/span*100)):0;
+    $('bar').style.width=pct+'%';$('pct').textContent=Math.round(pct)+'%';
+  }
+
+  // Ajustes
+  function openSettings(){
+    $('f-titulo').value=cfg.titulo;
+    $('f-desc').value=cfg.desc;
+    var d=new Date(cfg.fecha);$('f-fecha').value=isNaN(d.getTime())?'':localStr(d);
+    $('settings').classList.add('on');
+  }
+  function closeSettings(){$('settings').classList.remove('on');}
+  $('gear').onclick=openSettings;
+  $('f-cancel').onclick=closeSettings;
+  $('f-save').onclick=function(){
+    var f=$('f-fecha').value;if(!f){$('f-fecha').focus();return;}
+    cfg.titulo=$('f-titulo').value.trim()||'Cuenta regresiva';
+    cfg.desc=$('f-desc').value.trim();
+    cfg.fecha=f;
+    cfg.desde=localStr(new Date());          // el progreso arranca desde ahora
+    try{localStorage.setItem(KEY,JSON.stringify({titulo:cfg.titulo,desc:cfg.desc,fecha:cfg.fecha,desde:cfg.desde}));}catch(e){}
+    closeSettings();apply();
+  };
+
+  apply();
+})();
+</script></body></html>
