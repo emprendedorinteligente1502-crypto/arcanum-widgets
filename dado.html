@@ -8,29 +8,43 @@
   :root{--bg:#191919;--violet:#A855F7;--magenta:#E838C8;--cyan:#4CE0F5;--gold:#FFC857;--ink:#EFE3FF;--muted:#8E7BB0;--line:rgba(168,85,247,.28)}
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:'Chakra Petch',system-ui,sans-serif}
-  #stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:4px}
-  #root{width:460px;flex:0 0 auto;transform-origin:center center}
-  .card{background:radial-gradient(80% 90% at 50% 0%,rgba(168,85,247,.2),transparent 60%),linear-gradient(160deg,#1E1033,#150C24 80%);border:1px solid var(--line);border-radius:20px;padding:24px;text-align:center}
-  .eyebrow{font-family:'Silkscreen',monospace;font-size:9px;letter-spacing:.2em;color:var(--magenta);margin-bottom:14px}
-  .die{width:130px;height:130px;margin:0 auto;position:relative;cursor:pointer;-webkit-user-select:none;user-select:none}
-  .die svg{width:100%;height:100%;filter:drop-shadow(0 6px 18px rgba(168,85,247,.4))}
+  /* Panel: fijo a TODO el bloque */
+  .app{position:fixed;inset:0;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:clamp(8px,2.4vw,16px);padding:clamp(16px,4.5vw,28px);text-align:center;
+    background:radial-gradient(80% 90% at 50% 0%,rgba(168,85,247,.2),transparent 60%),linear-gradient(160deg,#1E1033,#150C24 80%);
+    border:1px solid var(--line);border-radius:clamp(0px,2vmin,20px)}
+  .eyebrow{flex:0 0 auto;font-family:'Silkscreen',monospace;font-size:clamp(8px,2vw,10px);letter-spacing:.2em;color:var(--magenta)}
+  /* Dado: llena la zona central y escala solo */
+  .diewrap{flex:1;min-height:0;min-width:0;width:100%;display:flex;align-items:center;justify-content:center}
+  .die{width:100%;height:100%;cursor:pointer;-webkit-user-select:none;user-select:none;display:flex;align-items:center;justify-content:center}
+  .die svg{width:100%;height:100%;display:block;overflow:visible;filter:drop-shadow(0 6px 18px rgba(168,85,247,.4))}
   .die .poly{fill:url(#gg);stroke:rgba(255,255,255,.4);stroke-width:1.5}
-  .die .num{fill:#fff;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:34px;text-anchor:middle;dominant-baseline:central}
+  .die .num{fill:#fff;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:32px;text-anchor:middle;dominant-baseline:central}
   .die.rolling{animation:roll .6s ease}
-  @keyframes roll{0%{transform:rotate(0) scale(1)}50%{transform:rotate(200deg) scale(1.12)}100%{transform:rotate(360deg) scale(1)}}
-  .verdict{margin-top:14px;font-family:'Silkscreen',monospace;font-size:10px;letter-spacing:.14em;min-height:14px;transition:.3s}
-  .btn{margin-top:14px;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:15px;color:#fff;background:linear-gradient(120deg,var(--violet),var(--magenta));border:0;border-radius:12px;padding:11px 26px;cursor:pointer;transition:.18s}
-  .btn:hover{box-shadow:0 6px 20px rgba(232,56,200,.35)}
+  @keyframes roll{0%{transform:rotate(0) scale(1)}50%{transform:rotate(200deg) scale(1.08)}100%{transform:rotate(360deg) scale(1)}}
+  .verdict{flex:0 0 auto;font-family:'Silkscreen',monospace;font-size:clamp(9px,2.4vw,11px);letter-spacing:.14em;min-height:1.2em;transition:.3s}
+  .btn{flex:0 0 auto;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:clamp(14px,3.6vw,16px);color:#fff;background:linear-gradient(120deg,var(--violet),var(--magenta));border:0;border-radius:12px;padding:clamp(11px,3vw,13px) clamp(22px,7vw,30px);cursor:pointer;transition:.18s}
+  .btn:hover{filter:brightness(1.12)}
   @media (prefers-reduced-motion:reduce){.die.rolling{animation:none}}
 </style></head>
-<body><div id="stage"><div id="root"><div class="card">
-  <div class="eyebrow" id="eyebrow">🎲 TIRADA DEL DESTINO</div>
-  <div class="die" id="die"><svg viewBox="0 0 100 100"><defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A855F7"/><stop offset="1" stop-color="#E838C8"/></linearGradient></defs>
-    <polygon class="poly" points="50,4 90,27 90,73 50,96 10,73 10,27"/><polygon class="poly" points="50,4 90,27 50,50 10,27" opacity=".55"/><polygon class="poly" points="90,27 90,73 50,50" opacity=".35"/><polygon class="poly" points="10,27 10,73 50,50" opacity=".35"/>
-    <text class="num" id="num" x="50" y="55">20</text></svg></div>
-  <div class="verdict" id="verdict">Toca el dado para tirar</div>
-  <button class="btn" id="roll">Tirar d20</button>
-</div></div></div>
+<body>
+  <div class="app">
+    <div class="eyebrow" id="eyebrow">🎲 TIRADA DEL DESTINO</div>
+    <div class="diewrap">
+      <div class="die" id="die">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+          <defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A855F7"/><stop offset="1" stop-color="#E838C8"/></linearGradient></defs>
+          <polygon class="poly" points="50,4 90,27 90,73 50,96 10,73 10,27"/>
+          <polygon class="poly" points="50,4 90,27 50,50 10,27" opacity=".55"/>
+          <polygon class="poly" points="90,27 90,73 50,50" opacity=".35"/>
+          <polygon class="poly" points="10,27 10,73 50,50" opacity=".35"/>
+          <text class="num" id="num" x="50" y="55">20</text>
+        </svg>
+      </div>
+    </div>
+    <div class="verdict" id="verdict">Toca el dado para tirar</div>
+    <button class="btn" id="roll">Tirar d20</button>
+  </div>
 <script>
 (function(){
   var q=new URLSearchParams(location.search),faces=parseInt(q.get('caras'),10)||20;
@@ -45,10 +59,5 @@
     else{verdict.style.color='var(--muted)';verdict.textContent='El destino es esquivo…';}}
   function roll(){die.classList.remove('rolling');void die.offsetWidth;die.classList.add('rolling');var f=0,iv=setInterval(function(){num.textContent=1+Math.floor(Math.random()*faces);if(++f>8){clearInterval(iv);final();}},60);}
   die.onclick=roll;document.getElementById('roll').onclick=roll;
-  var el=document.getElementById('root');
-  function fit(){el.style.transform='none';var s=Math.min((innerWidth-8)/el.offsetWidth,(innerHeight-8)/el.offsetHeight);s=Math.max(.12,Math.min(s,1.6));el.style.transform='scale('+s+')';}
-  var raf;function sch(){cancelAnimationFrame(raf);raf=requestAnimationFrame(fit);}
-  addEventListener('resize',sch);addEventListener('orientationchange',sch);if(window.ResizeObserver)new ResizeObserver(sch).observe(el);
-  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fit);fit();setTimeout(fit,300);
 })();
 </script></body></html>
