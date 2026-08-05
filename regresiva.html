@@ -56,7 +56,7 @@
   <div class="app" id="app">
     <div class="gear" id="gear" title="Configurar">⚙</div>
     <div class="head">
-      <div class="eyebrow" id="eyebrow">⚔️ Jefe final</div>
+      <div class="eyebrow" id="eyebrow">⚔️ ¿Cuándo es tu objetivo principal?</div>
       <h1 id="titulo">Cuenta regresiva</h1>
       <div class="desc" id="desc"></div>
     </div>
@@ -91,7 +91,7 @@
   // Estado inicial: lo guardado por el usuario tiene prioridad; si no, los parámetros de la URL.
   var saved={};try{saved=JSON.parse(localStorage.getItem(KEY)||'{}');}catch(e){}
   var cfg={
-    eyebrow:dec(q.get('eyebrow')||'⚔️ Jefe final'),
+    eyebrow:dec(q.get('eyebrow')||'⚔️ ¿Cuándo es tu objetivo principal?'),
     titulo:saved.titulo||dec(q.get('titulo')||'Cuenta regresiva'),
     desc:(saved.desc!==undefined?saved.desc:dec(q.get('desc')||'')),
     fecha:saved.fecha||dec(q.get('fecha')||'2026-08-11T09:00'),
