@@ -34,14 +34,14 @@
   @media (prefers-reduced-motion:reduce){.note{animation:none}}
 </style></head>
 <body><div class="card">
-  <div class="head"><h1 id="titulo">📜 Notas</h1><div class="count" id="count">0 NOTAS</div></div>
-  <div class="composer"><textarea id="input" placeholder="Escribe una idea…" rows="1"></textarea><button class="add" id="add">Anotar</button></div>
+  <div class="head"><h1 id="titulo">📜 NOTAS</h1><div class="count" id="count">0 NOTAS</div></div>
+  <div class="composer"><textarea id="input" placeholder="Escribe una idea…" rows="1"></textarea><button class="add" id="add">Guardar</button></div>
   <div class="grid" id="grid"></div>
 </div>
 <script>
 (function(){
   var q=new URLSearchParams(location.search);var dec=function(s){try{return decodeURIComponent(s);}catch(e){return s;}};
-  var KEY='arcanum_notas_'+(q.get('id')||'main');document.getElementById('titulo').textContent=dec(q.get('titulo')||'📜 BITÁCORA').toUpperCase();
+  var KEY='arcanum_notas_'+(q.get('id')||'main');document.getElementById('titulo').textContent=dec(q.get('titulo')||'📜 NOTAS').toUpperCase();
   var grid=document.getElementById('grid'),input=document.getElementById('input');var notes=[];
   try{notes=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){notes=[];}
   function save(){try{localStorage.setItem(KEY,JSON.stringify(notes));}catch(e){}}
